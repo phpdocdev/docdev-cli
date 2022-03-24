@@ -1,0 +1,20 @@
+!.gitkeep
+.DS_Store
+.idea
+npm-debug.log
+.env
+cert/*
+build/*
+build
+
+# Custom Container
+opt/custom/*
+
+# MySQL
+mysql/data/*
+
+# PHP
+custom_crontab
+
+# Apache
+cert
