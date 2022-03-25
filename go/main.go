@@ -16,7 +16,8 @@ import (
 
 func main() {
 	if _, err := os.Stat(".env"); os.IsNotExist(err) {
-		os.Chdir("../")
+		path := os.Getenv("DOCDEV_PATH")
+		os.Chdir(path)
 	}
 	loadEnv()
 
@@ -124,16 +125,22 @@ func main() {
 }
 
 func Init(c *cli.Context) error {
-	_, err := exec.Command("cp", ".env.example", ".env").Output()
-	if err != nil {
-		fmt.Printf("%s", err)
+	if _, err := os.Stat(".env"); os.IsNotExist(err) {
+		_, err := exec.Command("cp", ".env.example", ".env").Output()
+		if err != nil {
+			fmt.Printf("%s", err)
+		}
+		setEnvFileValue("TLD_SUFFIX", c.String("tld"))
+		setEnvFileValue("DOCUMENTROOT", c.String("root"))
+		setEnvFileValue("PHPV", c.String("php"))
+
+		path, _ := os.Getwd()
+		setRcExport("DOCDEV_PATH", path)
+
+		fmt.Printf("%s", "Created .env file\n")
+	} else {
+		fmt.Printf("%s", ".env file already exists.\n")
 	}
-
-	setEnvFileValue("TLD_SUFFIX", c.String("tld"))
-	setEnvFileValue("DOCUMENTROOT", c.String("root"))
-	setEnvFileValue("PHPV", c.String("php"))
-
-	fmt.Printf("%s", "Created .env file\n")
 
 	mkcert, err := exec.Command("which", "mkcert").Output()
 
@@ -213,7 +220,7 @@ func GenerateCerts(c *cli.Context) error {
 func GenerateHosts(c *cli.Context) error {
 	hostctl, err := exec.Command("which", "hostctl").Output()
 	if string(hostctl[:]) == "" {
-		_, err = exec.Command("brew", "install", "hostctl").Output()
+		_, err = exec.Command("brew", "install", "guumaster/tap/hostctl").Output()
 		if err != nil {
 			fmt.Printf("%s", err)
 		}
@@ -342,6 +349,12 @@ func ChangePhpVersion(c *cli.Context) error {
 
 	// Update the DOCDEV_PHP env for use for other applications
 	envVal := "php" + c.Args().First()
+	setRcExport("DOCDEV_PHP", envVal)
+
+	return err
+}
+
+func setRcExport(variable string, value string) error {
 	profileLocation := os.Getenv("HOME") + "/.zshrc"
 	if _, err := os.Stat(profileLocation); os.IsNotExist(err) {
 		profileLocation = os.Getenv("HOME") + "/.bashrc"
@@ -352,20 +365,21 @@ func ChangePhpVersion(c *cli.Context) error {
 
 	var found bool = false
 	for idx, line := range split {
-		if strings.HasPrefix(line, "export DOCDEV_PHP") {
+		if strings.HasPrefix(line, "export "+variable) {
 			found = true
 			re := regexp.MustCompile(`=.*`)
-			fix := re.ReplaceAllString(line, "="+envVal)
+			fix := re.ReplaceAllString(line, "="+value)
 			split[idx] = fix
-
 		}
 	}
 
 	if !found {
-		split = append(split, "export DOCDEV_PHP="+envVal)
+		split = append(split, "export "+variable+"="+value)
 	}
 
-	err = ioutil.WriteFile(profileLocation, []byte(strings.Join(split, "\n")), 0)
+	err := ioutil.WriteFile(profileLocation, []byte(strings.Join(split, "\n")), 0)
+	
+	os.Setenv(variable, value)
 
 	return err
 }
