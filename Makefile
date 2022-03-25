@@ -1,7 +1,7 @@
 VERSION := $(shell cat VERSION)
 NEXT_VERSION:=$(shell echo "$(VERSION)+0.1"|bc -l)
 
-compile: build generate release
+compile: install generate release
 install:
 	rm -rf ./build/*
 	cd go; ./compile.sh
@@ -9,7 +9,7 @@ install:
 generate:
 	@echo "0$(NEXT_VERSION)" > VERSION
 release:
-	gh release create v$(VERSION) ./build/* -t v0$(VERSION) -R https://github.ark.org/brandon-kiefer/docker-dev 
+	gh release create v$(VERSION) ./build/* -t v$(NEXT_VERSION) -R https://github.ark.org/brandon-kiefer/docker-dev 
 apache:
 	docker buildx build -f apache/Dockerfile apache/. --platform linux/arm64,linux/amd64 --push --tag brandonkiefer/php-dev:apache
 bind:

@@ -12,6 +12,7 @@ RUN echo "LoadModule vhost_alias_module modules/mod_vhost_alias.so" >> /usr/loca
     && echo "LoadModule proxy_module modules/mod_proxy.so" >> /usr/local/apache2/conf/httpd.conf \
     && echo "LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so" >> /usr/local/apache2/conf/httpd.conf
 
+COPY ./sites /usr/local/apache2/conf/sites/
 # Enable all Sites
 RUN echo "Include conf/sites/*.conf" >> /usr/local/apache2/conf/httpd.conf
 
