@@ -1,18 +1,27 @@
 package main
 
 import (
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strings"
 
+	"github.com/go-ping/ping"
+	"github.com/jedib0t/go-pretty/v6/table"
+	txt "github.com/jedib0t/go-pretty/v6/text"
 	"github.com/joho/godotenv"
 	"github.com/txn2/txeh"
 	"github.com/urfave/cli/v2"
 )
+
+var Version = "development"
 
 func main() {
 	if _, err := os.Stat(".env"); os.IsNotExist(err) {
@@ -30,7 +39,8 @@ func main() {
 	}
 
 	app := &cli.App{
-		Flags: flags,
+		EnableBashCompletion: true,
+		Flags:                flags,
 		Commands: []*cli.Command{
 			{
 				Name:    "init",
@@ -79,7 +89,7 @@ func main() {
 			{
 				Name:    "hosts",
 				Aliases: []string{},
-				Usage:   "Generate hosts file, backed up and produced at ./host. Will replace your system hostfile.",
+				Usage:   "Generate a new hosts profile and add it to your system /etc/host",
 				Action:  GenerateHosts,
 				Flags:   flags,
 			},
@@ -89,6 +99,11 @@ func main() {
 				Usage:   "Bring up the docker containers",
 				Action:  StartContainer,
 				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:  "php-only",
+						Usage: "Reset the PHP container",
+						Value: true,
+					},
 					&cli.BoolFlag{
 						Name:    "exec",
 						Aliases: []string{"e"},
@@ -103,6 +118,12 @@ func main() {
 				Action:  ExecContainer,
 			},
 			{
+				Name:    "test",
+				Aliases: []string{"t"},
+				Usage:   "Test your configuration.",
+				Action:  TestConfiguration,
+			},
+			{
 				Name:    "php",
 				Aliases: []string{"p"},
 				Usage:   "Change php version (requires \"start\" to rebuild). Valid values: 54, 56, 72, 74",
@@ -115,6 +136,22 @@ func main() {
 					},
 				},
 			},
+			{
+				Name:   "refresh",
+				Usage:  "Pull changes from git and images from Docker",
+				Action: Refresh,
+			},
+			{
+				Name:   "selfupdate",
+				Usage:  "Update docdev binary",
+				Action: SelfUpdate,
+			},
+			{
+				Name:    "version",
+				Aliases: []string{"v"},
+				Usage:   "Output current version.",
+				Action:  PrintVersion,
+			},
 		},
 	}
 
@@ -122,6 +159,66 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func PrintVersion(c *cli.Context) error {
+	fmt.Println(Version)
+	return nil
+}
+
+func Refresh(c *cli.Context) error {
+	fmt.Println("Removing containers and images")
+	cmd := "docker-compose down --rmi all"
+	_, err := exec.Command("bash", "-c", cmd).Output()
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	fmt.Println("Pulling changes from Git")
+	cmd = "git pull origin master"
+	_, err = exec.Command("bash", "-c", cmd).Output()
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	fmt.Println("Restarting...")
+	return StartContainer(c)
+}
+
+func SelfUpdate(c *cli.Context) error {
+
+	fmt.Println("Downloading latest release from github")
+
+	release := fmt.Sprintf("docdev-%s-%s", runtime.GOOS, runtime.GOARCH)
+	cmd := fmt.Sprintf("gh release download -p \"%s\" --repo \"https://github.ark.org/brandon-kiefer/docker-dev\"", release)
+	_, err := exec.Command("bash", "-c", cmd).Output()
+	if err != nil {
+		fmt.Printf("%s", err)
+	}
+
+	fmt.Println("Attempting to replace the existing binary")
+	os.Rename(release, "docdev")
+	newpath, err := exec.Command("which", "docdev").Output()
+	exists := strings.Replace(string(newpath), "\n", "", -1)
+	if exists != "" {
+		input, err := ioutil.ReadFile("docdev")
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+
+		err = ioutil.WriteFile(exists, input, 0644)
+		if err != nil {
+			fmt.Println("Error creating", exists)
+			fmt.Println(err)
+			return err
+		}
+	}
+
+	fmt.Println("docdev has been updated!")
+	return nil
 }
 
 func Init(c *cli.Context) error {
@@ -176,6 +273,130 @@ func Init(c *cli.Context) error {
 	return err
 }
 
+func TestConfiguration(c *cli.Context) error {
+
+	tw := table.NewWriter()
+	rowConfigAutoMerge := table.RowConfig{AutoMerge: true}
+	tw.SetOutputMirror(os.Stdout)
+
+	phpv := os.Getenv("DOCDEV_PHP")
+	ddPath := os.Getenv("DOCDEV_PATH")
+	tw.AppendRows([]table.Row{
+		{"$USER DOCDEV_PHP: ", phpv},
+		{"$USER DOCDEV_PATH: ", ddPath},
+	})
+	tw.AppendRow(table.Row{"---"})
+
+	mkcert, _ := exec.Command("which", "mkcert").Output()
+	hostctl, _ := exec.Command("which", "hostctl").Output()
+	tw.AppendRows([]table.Row{
+		{"mkcert installed: ", strings.Replace(string(mkcert), "\n", "", -1)},
+		{"hostctl installed: ", strings.Replace(string(hostctl), "\n", "", -1)},
+	}, rowConfigAutoMerge)
+	tw.AppendRow(table.Row{"---"})
+
+	certInstalled := ""
+	if isCertInstalled() != "" {
+		certInstalled = "Yes"
+	}
+	_, certStatus := verifyCert()
+	tw.AppendRow(table.Row{"Certificate installed: ", certInstalled})
+	tw.AppendRow(table.Row{"Certificate verified: ", certStatus})
+
+	tw.AppendRow(table.Row{"---"})
+
+	envExists := "Exists"
+	if _, err := os.Stat(".env"); os.IsNotExist(err) {
+		envExists = ""
+	}
+
+	tw.AppendRows([]table.Row{
+		{".env: ", envExists},
+		{"$DOCDEV PHPV: ", os.Getenv("PHPV")},
+		{"$DOCDEV DOCUMENTROOT: ", os.Getenv("DOCUMENTROOT")},
+		{"$DOCDEV TLD_SUFFIX: ", os.Getenv("TLD_SUFFIX")},
+	})
+	tw.AppendRow(table.Row{"---"})
+
+	hostCmd := "hostctl status docdev -o raw"
+	hostOut, _ := exec.Command("bash", "-c", hostCmd).Output()
+	hostLines := strings.Split(string(hostOut), "\n")
+	if len(hostLines) > 1 {
+		hostField := strings.Fields(hostLines[1])
+		hostOk := "Error: hosts profile \"docdev\" not enabled."
+		if len(hostField) > 1 && hostField[1] == "on" {
+			hostOk = "Yes (" + hostField[0] + ")"
+		}
+		tw.AppendRow(table.Row{"Hosts configured: ", hostOk})
+	} else {
+		tw.AppendRow(table.Row{"Error: Hosts configured: ", "Profile \"docdev\" not found"})
+	}
+
+	mysqlPing, err := ping.NewPinger("mysql")
+	mysqlPing.Count = 1
+	mysqlPing.OnFinish = func(stats *ping.Statistics) {
+		tw.AppendRow(table.Row{"MySQL reachable: ", "Yes (" + stats.IPAddr.String() + ")"})
+	}
+	err = mysqlPing.Run()
+	if err != nil {
+		tw.AppendRow(table.Row{"MySQL reachable: ", "Error: " + err.Error()})
+	}
+
+	redisPing, err := ping.NewPinger("redis")
+	redisPing.Count = 1
+	redisPing.OnFinish = func(stats *ping.Statistics) {
+		tw.AppendRow(table.Row{"Redis reachable: ", "Yes (" + stats.IPAddr.String() + ")"})
+	}
+	err = redisPing.Run()
+	if err != nil {
+		tw.AppendRow(table.Row{"Redis reachable: ", "Error: " + err.Error()})
+
+	}
+	tw.AppendRow(table.Row{"---"})
+
+	cmd := "docker-compose ps"
+	out, _ := exec.Command("bash", "-c", cmd).Output()
+	lines := strings.Split(string(out), "\n")
+
+	for _, line := range deleteEmptySlice(lines) {
+		fmtd := strings.Fields(line)
+		message := "Running"
+		if fmtd[3] != "running" {
+			message = "Error: " + fmtd[3]
+		}
+		if fmtd[2] == "php-fpm" {
+			tw.AppendRow(table.Row{"Docker PHP: ", message})
+		} else if fmtd[2] == "apache" {
+			tw.AppendRow(table.Row{"Docker Apache: ", message})
+		} else if fmtd[2] == "bind" {
+			tw.AppendRow(table.Row{"Docker Bind: ", message})
+		} else if fmtd[2] == "mailhog" {
+			tw.AppendRow(table.Row{"Docker Mailhog: ", message})
+		}
+	}
+
+	tw.SetRowPainter(table.RowPainter(func(row table.Row) txt.Colors {
+		if len(row) == 1 {
+			return txt.Colors{txt.FgWhite}
+		}
+
+		if strings.HasPrefix(fmt.Sprint(row[1]), "Error") {
+			return txt.Colors{txt.BgRed, txt.FgBlack}
+		}
+
+		switch row[1] {
+		case "":
+			return txt.Colors{txt.BgRed, txt.FgBlack}
+		default:
+			return txt.Colors{txt.BgGreen, txt.FgBlack}
+		}
+	}))
+
+	tw.Render()
+
+	return nil
+}
+
 func GenerateCerts(c *cli.Context) error {
 	names := getProjectHosts()
 
@@ -200,12 +421,7 @@ func GenerateCerts(c *cli.Context) error {
 
 	fmt.Printf("%s", "Certifcates have been generated.\n")
 
-	certInstalled, err := exec.Command("security", "find-certificate", "-a", "-c", "mkcert").Output()
-	if err != nil {
-		fmt.Printf("%s", err)
-	}
-
-	if string(certInstalled) == "" {
+	if isCertInstalled() == "" {
 		fmt.Printf("Root CA is not installed.\n")
 		_, err := exec.Command("sudo", "security", "add-trusted-cert", "-d", "-r", "trustRoot", "-k", "/Library/Keychains/System.keychain", "./cert/rootCA.pem").Output()
 		if err != nil {
@@ -264,14 +480,22 @@ func GenerateHosts(c *cli.Context) error {
 
 func StartContainer(c *cli.Context) error {
 
-	fmt.Printf("Removing existing php-fpm container.\n")
-	downCmd := `docker-compose rm -s -f -v php-fpm`
-	exec.Command("bash", "-c", downCmd).Output()
-	
-	fmt.Printf("Build php-fpm container.\n")
-	buildCmd := `docker-compose build php-fpm`
-	exec.Command("bash", "-c", buildCmd).Output()
-	
+	if c.Bool("php-only") {
+		fmt.Printf("Removing existing php-fpm container.\n")
+		downCmd := `docker-compose rm -s -f -v php-fpm`
+		exec.Command("bash", "-c", downCmd).Output()
+
+		fmt.Printf("Build php-fpm container.\n")
+		buildCmd := `docker-compose build php-fpm`
+		exec.Command("bash", "-c", buildCmd).Output()
+	} else {
+		downCmd := `docker-compose rm -s -f -v`
+		exec.Command("bash", "-c", downCmd).Output()
+
+		buildCmd := `docker-compose build`
+		exec.Command("bash", "-c", buildCmd).Output()
+	}
+
 	fmt.Printf("Starting all containers.\n")
 	startCmd := `docker-compose up -d`
 	start := exec.Command("bash", "-c", startCmd)
@@ -378,7 +602,7 @@ func setRcExport(variable string, value string) error {
 	}
 
 	err := ioutil.WriteFile(profileLocation, []byte(strings.Join(split, "\n")), 0)
-	
+
 	os.Setenv(variable, value)
 
 	return err
@@ -409,6 +633,55 @@ func getProjectHosts() string {
 	}
 
 	return string(names[:])
+}
+
+func isCertInstalled() string {
+	certInstalled, err := exec.Command("security", "find-certificate", "-a", "-c", "mkcert").Output()
+	if err != nil {
+		fmt.Printf("%s", err)
+	}
+	return string(certInstalled)
+}
+
+func verifyCert() (bool, string) {
+	randomHost := strings.Split(getProjectHosts(), " ")
+
+	rootPEM, err := ioutil.ReadFile("./cert/rootCA.pem")
+	if err != nil {
+		return false, "Error: " + err.Error()
+	}
+
+	certPEM, err := ioutil.ReadFile("./cert/nginx.pem")
+	if err != nil {
+		return false, "Error: " + err.Error()
+	}
+
+	roots := x509.NewCertPool()
+	ok := roots.AppendCertsFromPEM([]byte(rootPEM))
+	if !ok {
+		return false, "Error: failed to parse root certificate"
+	}
+
+	block, _ := pem.Decode([]byte(certPEM))
+	if block == nil {
+		return false, "Error: failed to parse certificate PEM"
+	}
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return false, "Error: " + err.Error()
+	}
+
+	opts := x509.VerifyOptions{
+		Roots:         roots,
+		DNSName:       randomHost[rand.Intn(len(randomHost))],
+		Intermediates: x509.NewCertPool(),
+	}
+
+	if _, err := cert.Verify(opts); err != nil {
+		return false, "Error: " + err.Error()
+	}
+
+	return true, "Verification successful"
 }
 
 func setEnvFileValue(key string, value string) error {

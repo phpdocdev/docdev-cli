@@ -22,8 +22,11 @@ do
         output_name+='.exe'
     fi
 
+    version=$(cat ../VERSION)
+    # version=$(echo "$lastversion+0.1"|bc -l)
+
     (
-        env GOOS=$GOOS GOARCH=$GOARCH GODEBUG=netdns=cgo+2 CGO_ENABLED=0 go build -ldflags "-s -w" -o $output_name .;
+        env GOOS=$GOOS GOARCH=$GOARCH GODEBUG=netdns=cgo+2 CGO_ENABLED=0 go build -ldflags "-s -w -X 'main.Version=v$version'" -o $output_name .;
         upx --best --lzma $output_name
     )
     if [ $? -ne 0 ]; then

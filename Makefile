@@ -1,15 +1,15 @@
 VERSION := $(shell cat VERSION)
 NEXT_VERSION:=$(shell echo "$(VERSION)+0.1"|bc -l)
 
-compile: install generate release
+compile: generate install release
 install:
 	rm -rf ./build/*
 	cd go; ./compile.sh
-	cp ./build/docdev-darwin-amd64 /usr/local/bin/docdev
+#	cp ./build/docdev-darwin-amd64 /usr/local/bin/docdev
 generate:
 	@echo "0$(NEXT_VERSION)" > VERSION
 release:
-	gh release create v$(VERSION) ./build/* -t v$(NEXT_VERSION) -R https://github.ark.org/brandon-kiefer/docker-dev 
+	gh release create v0$(NEXT_VERSION) ./build/* -t v0$(NEXT_VERSION) -R https://github.ark.org/brandon-kiefer/docker-dev 
 apache:
 	docker buildx build -f apache/Dockerfile apache/. --platform linux/arm64,linux/amd64 --push --tag brandonkiefer/php-dev:apache
 bind:
