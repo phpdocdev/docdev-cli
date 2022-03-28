@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-package_name=$(go list)
+package_name="docdev"
 
 #the full list of the platforms: https://golang.org/doc/install/source#environment
 platforms=(
@@ -26,7 +26,7 @@ do
     # version=$(echo "$lastversion+0.1"|bc -l)
 
     (
-        env GOOS=$GOOS GOARCH=$GOARCH GODEBUG=netdns=cgo+2 CGO_ENABLED=0 go build -ldflags "-s -w -X 'main.Version=v$version'" -o $output_name .;
+        env GOOS=$GOOS GOARCH=$GOARCH GODEBUG=netdns=cgo+2 CGO_ENABLED=0 go build -ldflags "-s -w -X 'main.Version=v$version'" -o $output_name main.go;
         upx --best --lzma $output_name
     )
     if [ $? -ne 0 ]; then
