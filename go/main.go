@@ -9,7 +9,6 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
-	"regexp"
 	"runtime"
 	"strings"
 
@@ -24,10 +23,13 @@ import (
 var Version = "development"
 
 func main() {
-	if _, err := os.Stat(".env"); os.IsNotExist(err) {
-		path := os.Getenv("DOCDEV_PATH")
-		os.Chdir(path)
+	docDevPath := getRcExport("DOCDEV_PATH")
+	if docDevPath == "" {
+		fmt.Printf("%s", txt.Color(txt.FgRed).Sprint("Error: missing DOCDEV_PATH from your current environment.\n\n"))
+		fmt.Printf("%s", txt.Color(txt.FgYellow).Sprint("echo \"DOCDEV_PATH=/Users/$USER/docdev\" >> ~/.bashrc\n"))
+		return
 	}
+	os.Chdir(docDevPath)
 	loadEnv()
 
 	flags := []cli.Flag{
@@ -231,9 +233,6 @@ func Init(c *cli.Context) error {
 		setEnvFileValue("DOCUMENTROOT", c.String("root"))
 		setEnvFileValue("PHPV", c.String("php"))
 
-		path, _ := os.Getwd()
-		setRcExport("DOCDEV_PATH", path)
-
 		fmt.Printf("%s", "Created .env file\n")
 	} else {
 		fmt.Printf("%s", ".env file already exists.\n")
@@ -280,10 +279,9 @@ func TestConfiguration(c *cli.Context) error {
 	tw.SetOutputMirror(os.Stdout)
 
 	phpv := os.Getenv("DOCDEV_PHP")
-	ddPath := os.Getenv("DOCDEV_PATH")
 	tw.AppendRows([]table.Row{
 		{"$USER DOCDEV_PHP: ", phpv},
-		{"$USER DOCDEV_PATH: ", ddPath},
+		{"$USER DOCDEV_PATH: ", getRcExport("DOCDEV_PATH")},
 	})
 	tw.AppendRow(table.Row{"---"})
 
@@ -361,9 +359,14 @@ func TestConfiguration(c *cli.Context) error {
 	for _, line := range deleteEmptySlice(lines) {
 		fmtd := strings.Fields(line)
 		message := "Running"
-		if fmtd[3] != "running" {
+		if len(fmtd) > 4 && fmtd[3] != "running" {
 			message = "Error: " + fmtd[3]
 		}
+
+		if len(fmtd) < 3 {
+			continue
+		}
+
 		if fmtd[2] == "php-fpm" {
 			tw.AppendRow(table.Row{"Docker PHP: ", message})
 		} else if fmtd[2] == "apache" {
@@ -578,26 +581,40 @@ func ChangePhpVersion(c *cli.Context) error {
 	return err
 }
 
-func setRcExport(variable string, value string) error {
-	profileLocation := os.Getenv("HOME") + "/.zshrc"
-	if _, err := os.Stat(profileLocation); os.IsNotExist(err) {
-		profileLocation = os.Getenv("HOME") + "/.bashrc"
+func getProfileLocation() string {
+	defaultLocation := os.Getenv("HOME") + "/.bashrc"
+	if _, err := os.Stat(defaultLocation); os.IsNotExist(err) {
+		return os.Getenv("HOME") + "/.zshrc"
 	}
+	return defaultLocation
+}
+
+func getRcExport(variable string) string {
+	envVal := os.Getenv(variable)
+	if envVal == "" {
+		profileLocation := getProfileLocation()
+		dat, _ := os.ReadFile(profileLocation)
+		split := strings.Split(string(dat), "\n")
+		for _, line := range split {
+			if strings.HasPrefix(line, "export "+variable) {
+				fix := strings.Split(line, "=")
+				return fix[1]
+			}
+		}
+	}
+
+	return envVal
+}
+
+func setRcExport(variable string, value string) error {
+	profileLocation := getProfileLocation()
 
 	dat, _ := os.ReadFile(profileLocation)
 	split := strings.Split(string(dat), "\n")
 
-	var found bool = false
-	for idx, line := range split {
-		if strings.HasPrefix(line, "export "+variable) {
-			found = true
-			re := regexp.MustCompile(`=.*`)
-			fix := re.ReplaceAllString(line, "="+value)
-			split[idx] = fix
-		}
-	}
+	var found string = getRcExport(variable)
 
-	if !found {
+	if found == "" {
 		split = append(split, "export "+variable+"="+value)
 	}
 
@@ -611,7 +628,7 @@ func setRcExport(variable string, value string) error {
 func loadEnv() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		fmt.Println("Error loading .env file")
 	}
 }
 
