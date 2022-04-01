@@ -24,3 +24,5 @@ php72:
 	docker buildx build -f php/72/Dockerfile php/. --platform linux/arm64,linux/amd64 --push --tag brandonkiefer/php-dev:72
 php74:
 	docker buildx build -f php/74/Dockerfile php/. --platform linux/arm64,linux/amd64 --push --tag brandonkiefer/php-dev:74
+php81:
+	docker buildx build -f php/81/Dockerfile php/. --platform linux/arm64,linux/amd64 --push --tag brandonkiefer/php-dev:81
