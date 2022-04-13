@@ -18,7 +18,7 @@ const (
 )
 
 func Setup() bool {
-    docDevPath := GetRcExport("DOCDEV_PATH")
+	docDevPath := GetRcExport("DOCDEV_PATH")
 	if docDevPath == "" {
 		fmt.Printf("%s", text.Color(text.FgRed).Sprint("Error: missing DOCDEV_PATH from your current environment.\n\n"))
 		fmt.Printf("%s", text.Color(text.FgYellow).Sprint("echo \"DOCDEV_PATH=/Users/$USER/docdev\" >> ~/.bashrc\n"))
@@ -26,7 +26,7 @@ func Setup() bool {
 	}
 	os.Chdir(docDevPath)
 	LoadEnv()
-    return true
+	return true
 }
 
 func GetProfileLocation() string {
@@ -54,7 +54,6 @@ func GetRcExport(variable string) string {
 	return envVal
 }
 
-
 func SetRcExport(variable string, value string) error {
 	profileLocation := GetProfileLocation()
 
@@ -73,7 +72,6 @@ func SetRcExport(variable string, value string) error {
 
 	return err
 }
-
 
 func SetEnvFileValue(key string, value string) error {
 	myEnv, err := godotenv.Read()
@@ -94,7 +92,6 @@ func SetEnvFileValue(key string, value string) error {
 
 	return err
 }
-
 
 func IsCertInstalled() string {
 	certInstalled, err := exec.Command("security", "find-certificate", "-a", "-c", "mkcert").Output()

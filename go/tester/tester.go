@@ -19,146 +19,145 @@ import (
 )
 
 func TestConfiguration(c *cli.Context) error {
-    tw := table.NewWriter()
-    rowConfigAutoMerge := table.RowConfig{AutoMerge: true}
-    tw.SetOutputMirror(os.Stdout)
+	tw := table.NewWriter()
+	rowConfigAutoMerge := table.RowConfig{AutoMerge: true}
+	tw.SetOutputMirror(os.Stdout)
 
-    phpv := os.Getenv("DOCDEV_PHP")
-    tw.AppendRows([]table.Row{
-        {"$USER DOCDEV_PHP: ", phpv},
-        {"$USER DOCDEV_PATH: ", utils.GetRcExport("DOCDEV_PATH")},
-    })
-    tw.AppendRow(table.Row{"---"})
+	phpv := os.Getenv("DOCDEV_PHP")
+	tw.AppendRows([]table.Row{
+		{"$USER DOCDEV_PHP: ", phpv},
+		{"$USER DOCDEV_PATH: ", utils.GetRcExport("DOCDEV_PATH")},
+	})
+	tw.AppendRow(table.Row{"---"})
 
-    mkcert, _ := exec.Command("which", "mkcert").Output()
-    hostctl, _ := exec.Command("which", "hostctl").Output()
-    tw.AppendRows([]table.Row{
-        {"mkcert installed: ", strings.Replace(string(mkcert), "\n", "", -1)},
-        {"hostctl installed: ", strings.Replace(string(hostctl), "\n", "", -1)},
-    }, rowConfigAutoMerge)
-    tw.AppendRow(table.Row{"---"})
+	mkcert, _ := exec.Command("which", "mkcert").Output()
+	hostctl, _ := exec.Command("which", "hostctl").Output()
+	tw.AppendRows([]table.Row{
+		{"mkcert installed: ", strings.Replace(string(mkcert), "\n", "", -1)},
+		{"hostctl installed: ", strings.Replace(string(hostctl), "\n", "", -1)},
+	}, rowConfigAutoMerge)
+	tw.AppendRow(table.Row{"---"})
 
-    certInstalled := ""
-    if utils.IsCertInstalled() != "" {
-        certInstalled = "Yes"
-    }
-    _, certStatus := verifyCert()
-    tw.AppendRow(table.Row{"Certificate installed: ", certInstalled})
-    tw.AppendRow(table.Row{"Certificate status: ", certStatus})
+	certInstalled := ""
+	if utils.IsCertInstalled() != "" {
+		certInstalled = "Yes"
+	}
+	_, certStatus := verifyCert()
+	tw.AppendRow(table.Row{"Certificate installed: ", certInstalled})
+	tw.AppendRow(table.Row{"Certificate status: ", certStatus})
 
-    tw.AppendRow(table.Row{"---"})
+	tw.AppendRow(table.Row{"---"})
 
-    envExists := "Exists"
-    if _, err := os.Stat(".env"); os.IsNotExist(err) {
-        envExists = ""
-    }
+	envExists := "Exists"
+	if _, err := os.Stat(".env"); os.IsNotExist(err) {
+		envExists = ""
+	}
 
-    projectHosts := strings.Split(utils.GetProjectHosts(), " ")
+	projectHosts := strings.Split(utils.GetProjectHosts(), " ")
 
-    tw.AppendRows([]table.Row{
-        {".env: ", envExists},
-        {"$DOCDEV PHPV: ", os.Getenv("PHPV")},
-        {"$DOCDEV DOCUMENTROOT: ", os.Getenv("DOCUMENTROOT")},
-        {"$DOCDEV TLD_SUFFIX: ", os.Getenv("TLD_SUFFIX")},
-        {"Total Projects: ", len(projectHosts) + 1},
-    })
-    tw.AppendRow(table.Row{"---"})
+	tw.AppendRows([]table.Row{
+		{".env: ", envExists},
+		{"$DOCDEV PHPV: ", os.Getenv("PHPV")},
+		{"$DOCDEV DOCUMENTROOT: ", os.Getenv("DOCUMENTROOT")},
+		{"$DOCDEV TLD_SUFFIX: ", os.Getenv("TLD_SUFFIX")},
+		{"Total Projects: ", len(projectHosts) + 1},
+	})
+	tw.AppendRow(table.Row{"---"})
 
-    hosts, err := txeh.NewHostsDefault()
-    
-    if len(projectHosts) > 1 {
-        randomHost := string(projectHosts[rand.Intn(len(projectHosts))])
-        
-        hstFound, hostLine, _ := hosts.HostAddressLookup(randomHost)
-        hostOk := "Error: Random project not found in /etc/hosts."
-        if hstFound {
-            hostOk = "Yes (" + randomHost + " : "+ hostLine +")"
-        }
-        tw.AppendRow(table.Row{"Hosts configured: ", hostOk})
-    } else {
-        tw.AppendRow(table.Row{"Hosts configured: ", "Error: No projects for hostnames"})
-    }
+	hosts, err := txeh.NewHostsDefault()
 
-    mysqlPing, err := ping.NewPinger("mysql")
-    mysqlPing.Count = 1
-    mysqlPing.OnFinish = func(stats *ping.Statistics) {
-        tw.AppendRow(table.Row{"MySQL reachable: ", "Yes (mysql : " + stats.IPAddr.String() + ")"})
-    }
-    err = mysqlPing.Run()
-    if err != nil {
-        tw.AppendRow(table.Row{"MySQL reachable: ", "Error: " + err.Error()})
-    }
+	if len(projectHosts) > 1 {
+		randomHost := string(projectHosts[rand.Intn(len(projectHosts))])
 
-    redisPing, err := ping.NewPinger("redis")
-    redisPing.Count = 1
-    redisPing.OnFinish = func(stats *ping.Statistics) {
-        tw.AppendRow(table.Row{"Redis reachable: ", "Yes (redis : " + stats.IPAddr.String() + ")"})
-    }
-    err = redisPing.Run()
-    if err != nil {
-        tw.AppendRow(table.Row{"Redis reachable: ", "Error: " + err.Error()})
+		hstFound, hostLine, _ := hosts.HostAddressLookup(randomHost)
+		hostOk := "Error: Random project not found in /etc/hosts."
+		if hstFound {
+			hostOk = "Yes (" + randomHost + " : " + hostLine + ")"
+		}
+		tw.AppendRow(table.Row{"Hosts configured: ", hostOk})
+	} else {
+		tw.AppendRow(table.Row{"Hosts configured: ", "Error: No projects for hostnames"})
+	}
 
-    }
-    tw.AppendRow(table.Row{"---"})
+	mysqlPing, err := ping.NewPinger("mysql")
+	mysqlPing.Count = 1
+	mysqlPing.OnFinish = func(stats *ping.Statistics) {
+		tw.AppendRow(table.Row{"MySQL reachable: ", "Yes (mysql : " + stats.IPAddr.String() + ")"})
+	}
+	err = mysqlPing.Run()
+	if err != nil {
+		tw.AppendRow(table.Row{"MySQL reachable: ", "Error: " + err.Error()})
+	}
 
-    cmd := "docker-compose ps"
-    out, _ := exec.Command("bash", "-c", cmd).Output()
-    lines := strings.Split(string(out), "\n")
+	redisPing, err := ping.NewPinger("redis")
+	redisPing.Count = 1
+	redisPing.OnFinish = func(stats *ping.Statistics) {
+		tw.AppendRow(table.Row{"Redis reachable: ", "Yes (redis : " + stats.IPAddr.String() + ")"})
+	}
+	err = redisPing.Run()
+	if err != nil {
+		tw.AppendRow(table.Row{"Redis reachable: ", "Error: " + err.Error()})
 
-    for _, line := range utils.DeleteEmptySlice(lines) {
-        fmtd := strings.Fields(line)
-        message := "Running"
-        if len(fmtd) > 4 && fmtd[3] != "running" {
-            message = "Error: " + fmtd[3]
-        }
+	}
+	tw.AppendRow(table.Row{"---"})
 
-        if len(fmtd) < 3 {
-            continue
-        }
+	cmd := "docker-compose ps"
+	out, _ := exec.Command("bash", "-c", cmd).Output()
+	lines := strings.Split(string(out), "\n")
 
-        if fmtd[2] == "php-fpm" {
-            tw.AppendRow(table.Row{"Docker PHP: ", message})
-        } else if fmtd[2] == "apache" {
-            tw.AppendRow(table.Row{"Docker Apache: ", message})
-        } else if fmtd[2] == "bind" {
-            tw.AppendRow(table.Row{"Docker Bind: ", message})
-        } else if fmtd[2] == "mailhog" {
-            tw.AppendRow(table.Row{"Docker Mailhog: ", message})
-        }
-    }
+	for _, line := range utils.DeleteEmptySlice(lines) {
+		fmtd := strings.Fields(line)
+		message := "Running"
+		if len(fmtd) > 4 && fmtd[3] != "running" {
+			message = "Error: " + fmtd[3]
+		}
 
-    tw.SetRowPainter(table.RowPainter(func(row table.Row) text.Colors {
-        if len(row) == 1 {
-            return text.Colors{text.FgWhite}
-        }
+		if len(fmtd) < 3 {
+			continue
+		}
 
-        if strings.HasPrefix(fmt.Sprint(row[1]), "Error") {
-            return text.Colors{text.BgRed, text.FgBlack}
-        }
+		if fmtd[2] == "php-fpm" {
+			tw.AppendRow(table.Row{"Docker PHP: ", message})
+		} else if fmtd[2] == "apache" {
+			tw.AppendRow(table.Row{"Docker Apache: ", message})
+		} else if fmtd[2] == "bind" {
+			tw.AppendRow(table.Row{"Docker Bind: ", message})
+		} else if fmtd[2] == "mailhog" {
+			tw.AppendRow(table.Row{"Docker Mailhog: ", message})
+		}
+	}
 
-        switch row[1] {
-        case "":
-            return text.Colors{text.BgRed, text.FgBlack}
-        default:
-            return text.Colors{text.BgGreen, text.FgBlack}
-        }
-    }))
+	tw.SetRowPainter(table.RowPainter(func(row table.Row) text.Colors {
+		if len(row) == 1 {
+			return text.Colors{text.FgWhite}
+		}
 
-    tw.Render()
+		if strings.HasPrefix(fmt.Sprint(row[1]), "Error") {
+			return text.Colors{text.BgRed, text.FgBlack}
+		}
 
-    return nil
+		switch row[1] {
+		case "":
+			return text.Colors{text.BgRed, text.FgBlack}
+		default:
+			return text.Colors{text.BgGreen, text.FgBlack}
+		}
+	}))
+
+	tw.Render()
+
+	return nil
 }
-
 
 func verifyCert() (bool, string) {
 	randomHost := strings.Split(utils.GetProjectHosts(), " ")
 
-	rootPEM, err := ioutil.ReadFile("./"+utils.CertPath+"/rootCA.pem")
+	rootPEM, err := ioutil.ReadFile("./" + utils.CertPath + "/rootCA.pem")
 	if err != nil {
 		return false, "Error: " + err.Error()
 	}
 
-	certPEM, err := ioutil.ReadFile("./"+utils.CertPath+"/nginx.pem")
+	certPEM, err := ioutil.ReadFile("./" + utils.CertPath + "/nginx.pem")
 	if err != nil {
 		return false, "Error: " + err.Error()
 	}

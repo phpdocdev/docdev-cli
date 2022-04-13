@@ -124,7 +124,7 @@ func GenerateCerts(c *cli.Context) error {
 		os.MkdirAll(utils.CertPath, 0755)
 	}
 
-	mkCertCmd := "mkcert -cert-file "+utils.CertPath+"/nginx.pem -key-file "+utils.CertPath+"/nginx.key localhost 127.0.0.1 ::1 " + names
+	mkCertCmd := "mkcert -cert-file " + utils.CertPath + "/nginx.pem -key-file " + utils.CertPath + "/nginx.key localhost 127.0.0.1 ::1 " + names
 	_, err := exec.Command("bash", "-c", mkCertCmd).Output()
 	if err != nil {
 		fmt.Printf("%s\n", err)
@@ -137,7 +137,7 @@ func GenerateCerts(c *cli.Context) error {
 
 	mkCertPath = mkCertPath[:len(mkCertPath)-1]
 
-	cpCertCmd := `cp -Rf "` + string(mkCertPath[:]) + `"/ ./`+utils.CertPath+`/`
+	cpCertCmd := `cp -Rf "` + string(mkCertPath[:]) + `"/ ./` + utils.CertPath + `/`
 	_, err = exec.Command("bash", "-c", cpCertCmd).Output()
 	if err != nil {
 		fmt.Printf("%s\n", err)
@@ -190,7 +190,7 @@ func GenerateHosts(c *cli.Context) error {
 	addHostList := strings.Split(addHosts, " ")
 	hosts.AddHosts("127.0.0.1", utils.DeleteEmptySlice(addHostList))
 
-	err = hosts.SaveAs(utils.HostPath+"/modified.hosts")
+	err = hosts.SaveAs(utils.HostPath + "/modified.hosts")
 	if err != nil {
 		fmt.Printf("%s", err)
 	}

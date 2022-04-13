@@ -18,10 +18,9 @@ func main() {
 		return
 	}
 
-	flags := []cli.Flag{
-	}
-	
-  cli.AppHelpTemplate = `NAME:
+	flags := []cli.Flag{}
+
+	cli.AppHelpTemplate = `NAME:
    {{.Name}} - {{.Version}}
 USAGE:
    {{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}
@@ -30,15 +29,15 @@ AUTHOR:
    {{range .Authors}}{{ . }}{{end}}
    {{end}}{{if .Commands}}
 COMMANDS:
-{{range .Commands}}{{if not .HideHelp}}   `+"\x1b[32m"+`{{join .Names ", "}}`+"\x1b[0m"+`{{"\t"}}`+"\x1b[94m"+`{{.Usage}}`+"\x1b[0m"+`{{"\n"}}{{if .Flags}}{{range .Flags}}`+"\x1b[2m"+`{{"     "}}--{{join .Names ", "}}{{"\t"}}{{.GetUsage}} {{if .GetValue}}(default: {{.GetValue}}){{end}}`+"\x1b[0m"+`{{ "\n"}}{{end}}{{end}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
+{{range .Commands}}{{if not .HideHelp}}   ` + "\x1b[32m" + `{{join .Names ", "}}` + "\x1b[0m" + `{{"\t"}}` + "\x1b[94m" + `{{.Usage}}` + "\x1b[0m" + `{{"\n"}}{{if .Flags}}{{range .Flags}}` + "\x1b[2m" + `{{"     "}}--{{join .Names ", "}}{{"\t"}}{{.GetUsage}} {{if .GetValue}}(default: {{.GetValue}}){{end}}` + "\x1b[0m" + `{{ "\n"}}{{end}}{{end}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
 GLOBAL OPTIONS:
    {{range .VisibleFlags}}{{.}}
    {{end}}{{end}}
 `
 
 	app := &cli.App{
-		Name: "docdev",
-		Version: Version,
+		Name:                 "docdev",
+		Version:              Version,
 		EnableBashCompletion: true,
 		Flags:                flags,
 		Commands: []*cli.Command{
@@ -49,19 +48,19 @@ GLOBAL OPTIONS:
 				Action:  base.Init,
 				Flags: append([]cli.Flag{
 					&cli.StringFlag{
-						Name:    "tld",
-						Value:   "loc",
-						Usage:   "TLD for project hostnames",
+						Name:  "tld",
+						Value: "loc",
+						Usage: "TLD for project hostnames",
 					},
 					&cli.StringFlag{
-						Name:    "root",
-						Value:   os.Getenv("HOME") + "/repos/",
-						Usage:   "Root directory containing your projects",
+						Name:  "root",
+						Value: os.Getenv("HOME") + "/repos/",
+						Usage: "Root directory containing your projects",
 					},
 					&cli.StringFlag{
-						Name:    "php",
-						Value:   "74",
-						Usage:   "Initial PHP version",
+						Name:  "php",
+						Value: "74",
+						Usage: "Initial PHP version",
 					},
 					&cli.BoolFlag{
 						Name:  "certs",
@@ -88,10 +87,10 @@ GLOBAL OPTIONS:
 				Aliases: []string{},
 				Usage:   "Generate a new hosts profile and add it to your system /etc/host",
 				Action:  base.GenerateHosts,
-				Flags:   []cli.Flag{
+				Flags: []cli.Flag{
 					&cli.BoolFlag{
-						Name:    "dry-run",
-						Usage:   "Dry run",
+						Name:  "dry-run",
+						Usage: "Dry run",
 					},
 				},
 			},
@@ -107,8 +106,8 @@ GLOBAL OPTIONS:
 						Value: true,
 					},
 					&cli.BoolFlag{
-						Name:    "exec",
-						Usage:   "Start container shell after starting",
+						Name:  "exec",
+						Usage: "Start container shell after starting",
 					},
 				},
 			},
@@ -131,8 +130,8 @@ GLOBAL OPTIONS:
 				Action:  base.ChangePhpVersion,
 				Flags: []cli.Flag{
 					&cli.BoolFlag{
-						Name:    "start",
-						Usage:   "Start the containers after switching the PHP version",
+						Name:  "start",
+						Usage: "Start the containers after switching the PHP version",
 					},
 					&cli.BoolFlag{
 						Name:  "php-only",
