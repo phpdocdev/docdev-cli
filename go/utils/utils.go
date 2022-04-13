@@ -12,6 +12,11 @@ import (
 	"github.com/joho/godotenv"
 )
 
+const (
+	CertPath = "data/cert"
+	HostPath = "data/hosts"
+)
+
 func Setup() bool {
     docDevPath := GetRcExport("DOCDEV_PATH")
 	if docDevPath == "" {

@@ -120,32 +120,36 @@ func Init(c *cli.Context) error {
 func GenerateCerts(c *cli.Context) error {
 	names := utils.GetProjectHosts()
 
-	mkCertCmd := "mkcert -cert-file cert/nginx.pem -key-file cert/nginx.key localhost 127.0.0.1 ::1 " + names
+	if _, err := os.Stat(utils.CertPath); os.IsNotExist(err) {
+		os.MkdirAll(utils.CertPath, 0755)
+	}
+
+	mkCertCmd := "mkcert -cert-file "+utils.CertPath+"/nginx.pem -key-file "+utils.CertPath+"/nginx.key localhost 127.0.0.1 ::1 " + names
 	_, err := exec.Command("bash", "-c", mkCertCmd).Output()
 	if err != nil {
-		fmt.Printf("%s", err)
+		fmt.Printf("%s\n", err)
 	}
 
 	mkCertPath, err := exec.Command("mkcert", "-CAROOT").Output()
 	if err != nil {
-		fmt.Printf("%s", err)
+		fmt.Printf("%s\n", err)
 	}
 
 	mkCertPath = mkCertPath[:len(mkCertPath)-1]
 
-	cpCertCmd := `cp -Rf "` + string(mkCertPath[:]) + `"/ ./cert/`
+	cpCertCmd := `cp -Rf "` + string(mkCertPath[:]) + `"/ ./`+utils.CertPath+`/`
 	_, err = exec.Command("bash", "-c", cpCertCmd).Output()
 	if err != nil {
-		fmt.Printf("%s", err)
+		fmt.Printf("%s\n", err)
 	}
 
 	fmt.Printf("%s", "Certifcates have been generated.\n")
 
 	if utils.IsCertInstalled() == "" {
 		fmt.Printf("Root CA is not installed.\n")
-		_, err := exec.Command("sudo", "security", "add-trusted-cert", "-d", "-r", "trustRoot", "-k", "/Library/Keychains/System.keychain", "./cert/rootCA.pem").Output()
+		_, err := exec.Command("sudo", "security", "add-trusted-cert", "-d", "-r", "trustRoot", "-k", "/Library/Keychains/System.keychain", "./"+utils.CertPath+"/rootCA.pem").Output()
 		if err != nil {
-			fmt.Printf("%s", err)
+			fmt.Printf("%s\n", err)
 		}
 		fmt.Printf("Root CA has been installed.\n")
 	}
@@ -154,6 +158,11 @@ func GenerateCerts(c *cli.Context) error {
 }
 
 func GenerateHosts(c *cli.Context) error {
+
+	if _, err := os.Stat(utils.HostPath); os.IsNotExist(err) {
+		os.MkdirAll(utils.HostPath, 0755)
+	}
+
 	hostctl, err := exec.Command("which", "hostctl").Output()
 	if string(hostctl[:]) == "" {
 		_, err = exec.Command("brew", "install", "guumaster/tap/hostctl").Output()
@@ -162,7 +171,7 @@ func GenerateHosts(c *cli.Context) error {
 		}
 	}
 
-	_, err = exec.Command("hostctl", "backup", "--path", "host/").Output()
+	_, err = exec.Command("hostctl", "backup", "--path", utils.HostPath+"/").Output()
 	if err != nil {
 		fmt.Printf("%s", err)
 	}
@@ -181,13 +190,13 @@ func GenerateHosts(c *cli.Context) error {
 	addHostList := strings.Split(addHosts, " ")
 	hosts.AddHosts("127.0.0.1", utils.DeleteEmptySlice(addHostList))
 
-	err = hosts.SaveAs("host/modified.hosts")
+	err = hosts.SaveAs(utils.HostPath+"/modified.hosts")
 	if err != nil {
 		fmt.Printf("%s", err)
 	}
 
 	if c.Bool("dry-run") == false {
-		_, err = exec.Command("sudo", "hostctl", "restore", "--from", "host/modified.hosts").Output()
+		_, err = exec.Command("sudo", "hostctl", "restore", "--from", utils.HostPath+"/modified.hosts").Output()
 		if err != nil {
 			fmt.Printf("%s", err)
 		}

@@ -153,12 +153,12 @@ func TestConfiguration(c *cli.Context) error {
 func verifyCert() (bool, string) {
 	randomHost := strings.Split(utils.GetProjectHosts(), " ")
 
-	rootPEM, err := ioutil.ReadFile("./cert/rootCA.pem")
+	rootPEM, err := ioutil.ReadFile("./"+utils.CertPath+"/rootCA.pem")
 	if err != nil {
 		return false, "Error: " + err.Error()
 	}
 
-	certPEM, err := ioutil.ReadFile("./cert/nginx.pem")
+	certPEM, err := ioutil.ReadFile("./"+utils.CertPath+"/nginx.pem")
 	if err != nil {
 		return false, "Error: " + err.Error()
 	}

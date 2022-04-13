@@ -5,9 +5,7 @@ package_name="docdev"
 #the full list of the platforms: https://golang.org/doc/install/source#environment
 platforms=(
 "darwin/amd64"
-"darwin/arm64"
 "linux/amd64"
-"linux/arm64"
 "windows/amd64"
  )
 
