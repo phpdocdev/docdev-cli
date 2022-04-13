@@ -9,7 +9,7 @@ install:
 generate:
 	@echo "0$(NEXT_VERSION)" > VERSION
 release:
-	gh release create v0$(NEXT_VERSION) ./build/* -t v0$(NEXT_VERSION)
+	gh release create v0$(NEXT_VERSION) ./build/* -t v0$(NEXT_VERSION) -R https://github.com/phpdocdev/docdev
 apache:
 	docker buildx build -f apache/Dockerfile apache/. --platform linux/arm64,linux/amd64 --push --tag brandonkiefer/php-dev:apache
 bind:
