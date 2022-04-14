@@ -7,7 +7,7 @@ install:
 	cd go; ./compile.sh
 #	cp ./build/docdev-darwin-amd64 /usr/local/bin/docdev
 generate:
-	@echo "0$(NEXT_VERSION)" > VERSION
+	@echo "$(NEXT_VERSION)" > VERSION
 release:
 	gh release create v0$(NEXT_VERSION) ./build/* -t v0$(NEXT_VERSION) -R https://github.com/phpdocdev/docdev
 apache:

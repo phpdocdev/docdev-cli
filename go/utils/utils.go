@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -21,18 +22,41 @@ func Setup() bool {
 	docDevPath := GetRcExport("DOCDEV_PATH")
 	if docDevPath == "" {
 		fmt.Printf("%s", text.Color(text.FgRed).Sprint("Error: missing DOCDEV_PATH from your current environment.\n\n"))
-		fmt.Printf("%s", text.Color(text.FgYellow).Sprint("echo \"DOCDEV_PATH=/Users/$USER/docdev\" >> ~/.bashrc\n"))
+		fmt.Printf("%s", text.Color(text.FgYellow).Sprint("echo \"export DOCDEV_PATH=/Users/$USER/docdev\" >> "+GetProfileLocation()+"\n"))
 		return false
 	}
+
+	if _, err := os.Stat(docDevPath); os.IsNotExist(err) {
+		os.MkdirAll(docDevPath, 0755)
+	}
+
 	os.Chdir(docDevPath)
+
+	if IsDirEmpty(docDevPath) {
+		fmt.Println("\x1b[94mCloning docker-dev to " + docDevPath + "...\033[0m")
+		cmd := "git clone https://github.ark.org/brandon-kiefer/docker-dev.git ."
+		_, err := exec.Command("bash", "-c", cmd).Output()
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		if _, err := os.Stat(".env"); os.IsNotExist(err) {
+			fmt.Println("\x1b[94mCopying .env.example to .env\033[0m")
+			_, err := exec.Command("cp", ".env.example", ".env").Output()
+			if err != nil {
+				fmt.Printf("%s", err)
+			}
+		}
+	}
+
 	LoadEnv()
 	return true
 }
 
 func GetProfileLocation() string {
-	defaultLocation := os.Getenv("HOME") + "/.bashrc"
+	defaultLocation := os.Getenv("HOME") + "/.zshrc"
 	if _, err := os.Stat(defaultLocation); os.IsNotExist(err) {
-		return os.Getenv("HOME") + "/.zshrc"
+		return os.Getenv("HOME") + "/.bashrc"
 	}
 	return defaultLocation
 }
@@ -126,4 +150,18 @@ func LoadEnv() {
 	if err != nil {
 		fmt.Println("Error loading .env file")
 	}
+}
+
+func IsDirEmpty(name string) bool {
+	f, err := os.Open(name)
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+
+	_, err = f.Readdirnames(1) // Or f.Readdir(1)
+	if err == io.EOF {
+		return true
+	}
+	return false // Either not empty or error, suits both cases
 }

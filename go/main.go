@@ -39,7 +39,8 @@ GLOBAL OPTIONS:
 		Name:                 "docdev",
 		Version:              Version,
 		EnableBashCompletion: true,
-		Flags:                flags,
+
+		Flags: flags,
 		Commands: []*cli.Command{
 			{
 				Name:    "init",

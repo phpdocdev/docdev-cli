@@ -209,6 +209,19 @@ func GenerateHosts(c *cli.Context) error {
 
 func StartContainer(c *cli.Context) error {
 
+	if _, err := os.Stat(utils.CertPath); os.IsNotExist(err) {
+		GenerateCerts(c)
+	}
+
+	docRoot := os.Getenv("DOCUMENTROOT")
+	docRoot = strings.Replace(docRoot, "~", "/Users/"+os.Getenv("USER"), 1)
+	if docRoot != "" {
+		if _, err := os.Stat(docRoot); os.IsNotExist(err) {
+			fmt.Printf("\x1b[31mDOCUMENTROOT path in .env does not exist: \033[0m%s", docRoot)
+			return nil
+		}
+	}
+
 	if c.Bool("php-only") {
 		fmt.Printf("Removing existing php-fpm container.\n")
 		downCmd := `docker-compose rm -s -f -v php-fpm`
