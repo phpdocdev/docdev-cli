@@ -34,8 +34,8 @@ jobs:
           publish: true
           context: php/.
           platform: linux/arm64,linux/amd64
-          dockerHubUser: ${{ github.actor }}
-          dockerHubPassword: ${{ secrets.TOKEN }}
+          dockerHubUser: bskiefer
+          dockerHubPassword: ${{ secrets.GITHUB_TOKEN }}
 #       - name: get changed files
 #         id: getfile
 #         run: |
