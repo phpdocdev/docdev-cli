@@ -23,19 +23,44 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
-      - name: Customizable Docker Buildx
-        # You may pin to the exact commit or the version.
-        # uses: ilteoood/docker_buildx@cdfa422f87c26584dc0fa16bd52a44fb6bfa8ff6
-        uses: bskiefer/docker_buildx@v1.4
+      -
+        name: Set up Docker Buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v3
         with:
-          tag: ghcr.io/phpdocdev/php:${{ matrix.PHP }}
-          imageName: php:${{ matrix.PHP }}
-          dockerFile: php/${{ matrix.PHP }}/Dockerfile
-          publish: true
-          context: php/.
-          platform: linux/arm64,linux/amd64
-          dockerHubUser: bskiefer
-          dockerHubPassword: ${{ secrets.GITHUB_TOKEN }}
+          buildx-version: latest
+          qemu-version: latest
+      -
+        name: Available platforms
+        run: echo ${{ steps.buildx.outputs.platforms }}
+      -
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      -
+        name: Run Buildx
+        run: |
+          docker buildx build \
+            -f php/${{ matrix.PHP }}/Dockerfile \
+            php/. \
+            --platform linux/amd64,linux/arm/v7,linux/arm64 \
+            --push --tag brandonkiefer/php-dev:${{ matrix.PHP }}
+#       - name: Customizable Docker Buildx
+#         # You may pin to the exact commit or the version.
+#         # uses: ilteoood/docker_buildx@cdfa422f87c26584dc0fa16bd52a44fb6bfa8ff6
+#         uses: bskiefer/docker_buildx@v1.4
+#         with:
+#           tag: ghcr.io/phpdocdev/php:${{ matrix.PHP }}
+#           imageName: php:${{ matrix.PHP }}
+#           dockerFile: php/${{ matrix.PHP }}/Dockerfile
+#           publish: true
+#           context: php/.
+#           platform: linux/arm64,linux/amd64
+#           dockerHubUser: bskiefer
+#           dockerHubPassword: ${{ secrets.GITHUB_TOKEN }}
 #       - name: get changed files
 #         id: getfile
 #         run: |
