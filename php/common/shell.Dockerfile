@@ -1,8 +1,16 @@
 # Setup user (to stay in-sync with the host system's user)
 ARG CUSTOM_USER_NAME=dev
+ENV CUSTOM_USER_NAME=$CUSTOM_USER_NAME
+
 ARG CUSTOM_UID=1000
+ENV CUSTOM_UID=$CUSTOM_UID
+
 ARG CUSTOM_GID=1000
+ENV CUSTOM_GID=$CUSTOM_GID
+
 ARG PHPV
+ENV PHPV=$PHPV
+
 RUN groupadd -g ${CUSTOM_GID} ${CUSTOM_USER_NAME} \
   && useradd -m -u ${CUSTOM_UID} -g ${CUSTOM_USER_NAME} -G sudo -s /usr/bin/zsh ${CUSTOM_USER_NAME} \
   && passwd -d ${CUSTOM_USER_NAME} \
@@ -27,3 +35,11 @@ RUN ZSH="/home/${CUSTOM_USER_NAME}/.oh-my-zsh" sh -c "$(curl -fsSL https://raw.g
 RUN chown ${CUSTOM_USER_NAME}:${CUSTOM_USER_NAME} /etc/supervisor/supervisord.pid \
   && chmod gu+rw /var/run \
   && chmod gu+s /usr/sbin/cron
+
+COPY ./conf/docker-entrypoint.d/*.sh /docker-entrypoint.d/
+COPY ./conf/docker-entrypoint.sh /docker-entrypoint.sh
+COPY ./conf/sudo-dev /etc/sudoers.d/"${CUSTOM_USER_NAME}"
+
+RUN chmod +x /docker-entrypoint.sh
+
+ENTRYPOINT ["/docker-entrypoint.sh"]

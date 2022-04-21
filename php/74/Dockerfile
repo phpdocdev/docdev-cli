@@ -70,5 +70,4 @@ RUN chmod +x /usr/local/bin/install-php-extensions && sync && \
 ARG PHPV=74
 INCLUDE+ ./common/shell.Dockerfile
 
-ENTRYPOINT []
 CMD ["/usr/bin/supervisord"]
