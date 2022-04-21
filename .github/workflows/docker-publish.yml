@@ -32,7 +32,7 @@ jobs:
       - name: Customizable Docker Buildx
         # You may pin to the exact commit or the version.
         # uses: ilteoood/docker_buildx@cdfa422f87c26584dc0fa16bd52a44fb6bfa8ff6
-        uses: bskiefer/docker_buildx@v1.3
+        uses: bskiefer/docker_buildx@v1.4
         with:
           tag: ghcr.io/phpdocdev/php:${{ matrix.PHP }}
           imageName: php:${{ matrix.PHP }}
