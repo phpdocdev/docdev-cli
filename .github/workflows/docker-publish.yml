@@ -69,12 +69,12 @@ jobs:
         id: filters
         with:
           filters: |
-            github:
-              - '.github/**'
+            changed:
+              - ${{format('php/{0}', matrix.TAGS)}}
       -
         name: Changed path
         run: |
-          echo ${{ steps.filters.outputs.github }}
+          echo ${{ steps.filters.outputs.changed }}
       -
         name: Available platforms
         run: exit 1
