@@ -21,6 +21,10 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-paths
+        with:
+          paths: .github php
       - uses: dorny/paths-filter@v2
         id: filter
         with:
@@ -57,12 +61,12 @@ jobs:
         with:
           buildx-version: latest
           qemu-version: latest
-#       -
-#         name: Available platforms
-#         run: echo ${{ steps.filter.outputs.changed_files }}
-#       -
-#         name: Available platforms
-#         run: echo ${{ steps.filter.outputs.php_files }}
+      -
+        name: Changed path
+        run: echo ${{needs.changes.outputs.changed }}
+      -
+        name: Available platforms
+        run: exit 1
 #       -
 #         name: Available platforms
 #         run: echo ${{contains(fromJSON(steps.filter.outputs.changed_files), '.github/workflows/docker-publish.yml')}}
