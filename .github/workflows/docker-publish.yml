@@ -80,7 +80,7 @@ jobs:
         with:
           filters: |
             changed:
-              - ${{format('php/{0}/**', matrix.TAGS)}}
+              - ${{format('{0}/**', matrix.TAGS)}}
       - name: Run Buildx
         if: steps.filter.outputs.changed == 'true'
         run: |
