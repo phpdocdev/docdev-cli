@@ -3,6 +3,7 @@ FROM php:7.4-fpm
 
 ENV PATH /usr/local/go/bin:/root/.composer/vendor/bin:$PATH
 
+
 RUN apt update && apt install -y --no-install-recommends \
     cron \
     git \
