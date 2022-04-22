@@ -69,7 +69,7 @@ jobs:
         name: Available platforms
         run: echo ${{ steps.filter.outputs.php }}
       -
-        if: ${{ steps.filter.outputs.php }} && contains(steps.filter.outputs.php_files, 'php/${{ matrix.TAGS }}/Dockerfile')
+        if: ${{ steps.filter.outputs.php }} && ${{contains(steps.filter.outputs.php_files, 'php/${{ matrix.TAGS }}/Dockerfile')}}
         run: exit 1
       -
         run: exit 0
