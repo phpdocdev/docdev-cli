@@ -46,7 +46,7 @@ jobs:
       - uses: dorny/paths-filter@v2
         id: filter
         with:
-#           list-files: json
+          list-files: json
           filters: |
             php:
               - 'php/**/Dockerfile'
@@ -61,13 +61,13 @@ jobs:
           qemu-version: latest
       -
         name: Available platforms
-        run: echo ${{contains(steps.filter.outputs.php_files, format('php/{0}/Dockerfile', matrix.TAGS))}}
-      -
-        name: Available platforms
         run: echo ${{ steps.filter.outputs.changed_files }}
       -
         name: Available platforms
         run: echo ${{ steps.filter.outputs.php_files }}
+      -
+        name: Available platforms
+        run: echo ${{contains(steps.filter.outputs.php_files, format('php/{0}/Dockerfile', matrix.TAGS))}}
       -
         name: Get path
         if: steps.filter.outputs.php
