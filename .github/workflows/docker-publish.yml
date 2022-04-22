@@ -74,6 +74,11 @@ jobs:
         run: |
           echo php/${{ matrix.TAGS }}/Dockerfile
       -
+        name: Get path2
+        if: steps.filter.outputs.php
+        run: |
+          echo ${{format('php/{0}/Dockerfile', matrix.TAGS)}}
+      -
         name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
