@@ -13,8 +13,6 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
-        uses: actions/checkout@v3
       - name: Set up Docker Buildx
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v3
@@ -34,6 +32,7 @@ jobs:
       matrix:
         TAGS: [54, 56, 72, 74, 81]
     steps:
+      - uses: actions/checkout@v3
       - uses: dorny/paths-filter@v2
         id: filter
         with:
@@ -57,6 +56,7 @@ jobs:
     outputs:
       matrix: ${{ steps.getfile.outputs.files }}
     steps:
+      - uses: actions/checkout@v3
       - uses: dorny/paths-filter@v2
         id: filter
         with:
