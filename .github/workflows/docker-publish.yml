@@ -20,7 +20,10 @@ jobs:
       matrix:
         TAGS: [54, 56, 72, 74, 81]
     steps:
-      - uses: actions/checkout@v3
+      - name: checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 100
       - name: Set up Docker Buildx
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v3
@@ -56,7 +59,10 @@ jobs:
     outputs:
       matrix: ${{ steps.getfile.outputs.files }}
     steps:
-      - uses: actions/checkout@v3
+      - name: checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 100
       - name: Set up Docker Buildx
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v3
