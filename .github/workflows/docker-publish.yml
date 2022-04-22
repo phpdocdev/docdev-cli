@@ -64,6 +64,15 @@ jobs:
         id: changed-paths
         with:
           paths: ${{format('php/{0}', matrix.TAGS)}}
+          
+      - uses: YassinEldeeb/has-changed-path@v2.1
+        id: changed-pathss
+        with:
+          paths: .github
+      - uses: YassinEldeeb/has-changed-path@v2.1
+        id: changed-pathsss
+        with:
+          paths: .github/**
       -
         name: Changed path
         run: |
