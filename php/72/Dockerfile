@@ -1,6 +1,7 @@
 # syntax = edrevo/dockerfile-plus
 FROM php:7.2-fpm
 
+
 ENV PATH /usr/local/go/bin:/root/.composer/vendor/bin:$PATH
 
 RUN apt update && apt install -y --no-install-recommends \
