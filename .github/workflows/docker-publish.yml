@@ -69,11 +69,12 @@ jobs:
         name: Available platforms
         run: echo ${{ steps.filter.outputs.php }}
       -
-        name: Available platforms
+        name: Get path
+        if: steps.filter.outputs.php
         run: |
           echo php/${{ matrix.TAGS }}/Dockerfile
       -
-        if: steps.filter.outputs.php && contains(steps.filter.outputs.php_files, 'php/${{ matrix.TAGS }}/Dockerfile')
+        if: steps.filter.outputs.php && contains(steps.filter.outputs.php_files, format('php/{0}/Dockerfile', matrix.TAGS))
         run: exit 1
       -
         name: Login to GitHub Container Registry
