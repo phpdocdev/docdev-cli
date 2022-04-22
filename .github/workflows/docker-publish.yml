@@ -70,7 +70,7 @@ jobs:
         with:
           filters: |
             changed:
-              - ${{format('php/{0}', matrix.TAGS)}}
+              - ${{format('php/{0}/**', matrix.TAGS)}}
       -
         name: Changed path
         run: |
