@@ -66,13 +66,13 @@ jobs:
         name: Available platforms
         run: echo ${{ toJSON(steps.filter.outputs.php_files) }}
       -
-        name: Available platformss
-        run: echo contains(steps.filter.outputs.php_files, format('php/{0}/Dockerfile', ${{ matrix.TAGS }}))
-      -
         name: Available platforms
         run: echo ${{ steps.filter.outputs.php }}
       -
+        if: contains(steps.filter.outputs.php_files, 'php/${{ matrix.TAGS }}/Dockerfile')
         run: exit 1
+      -
+        run: exit 0
       -
         name: Login to GitHub Container Registry
         uses: docker/login-action@v1
