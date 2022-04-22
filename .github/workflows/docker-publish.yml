@@ -46,41 +46,6 @@ jobs:
           docker buildx build \
             -f php/${{ matrix.PHP }}/Dockerfile \
             php/. \
-            --platform linux/amd64,linux/arm/v7,linux/arm64 \
+            --platform linux/amd64,linux/arm64 \
             --push --tag brandonkiefer/php-dev:${{ matrix.PHP }}
-#       - name: Customizable Docker Buildx
-#         # You may pin to the exact commit or the version.
-#         # uses: ilteoood/docker_buildx@cdfa422f87c26584dc0fa16bd52a44fb6bfa8ff6
-#         uses: bskiefer/docker_buildx@v1.4
-#         with:
-#           tag: ghcr.io/phpdocdev/php:${{ matrix.PHP }}
-#           imageName: php:${{ matrix.PHP }}
-#           dockerFile: php/${{ matrix.PHP }}/Dockerfile
-#           publish: true
-#           context: php/.
-#           platform: linux/arm64,linux/amd64
-#           dockerHubUser: bskiefer
-#           dockerHubPassword: ${{ secrets.GITHUB_TOKEN }}
-#       - name: get changed files
-#         id: getfile
-#         run: |
-#           echo "::set-output name=files::$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }}| xargs)"
-#   job2:
-#     needs: [ setup ]
-#     runs-on: ubuntu-latest
-#     strategy:
-#       matrix:
-#         value: ${{needs.setup.outputs.matrix}}
-#     steps:
-#       - run: |
-#             echo "${{ matrix.value }}"
-#       -
-#         name: Build and publish image
-#         uses: zmingxie/docker_buildx@master
-#         with:
-#           publish: true
-#           dockerFile: ${{ matrix.value }}
-#           imageName: YOUR_IMAGE_NAME_HERE
-#           dockerHubUser: YOUR_USER_HERE
-#           dockerHubPassword: YOUR_PASSWORD_HERE
           
