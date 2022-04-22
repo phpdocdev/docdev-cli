@@ -61,13 +61,13 @@ jobs:
           qemu-version: latest
       -
         name: Available platforms
-        run: echo ${{contains(steps.filter.outputs.php_files, 'php/${{ matrix.TAGS }}/Dockerfile')}}
+        run: echo ${{contains(steps.filter.outputs.php_files, format('php/{0}/Dockerfile', matrix.TAGS))}}
       -
         name: Available platforms
-        run: echo ${{ steps.filter.outputs.changed }}
+        run: echo ${{ steps.filter.outputs.changed_files }}
       -
         name: Available platforms
-        run: echo ${{ steps.filter.outputs.php }}
+        run: echo ${{ steps.filter.outputs.php_files }}
       -
         name: Get path
         if: steps.filter.outputs.php
