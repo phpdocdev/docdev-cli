@@ -66,8 +66,8 @@ jobs:
       -
         name: Changed path
         run: |
-          echo ${{needs.changes.outputs.changed }}
-          echo ${{toJSON(needs.changes.changed-paths)}}
+          echo ${{fromJSON(needs.changes.outputs.changed) }}
+          echo ${{fromJSON(needs.changes.changed-paths)}}
       -
         name: Available platforms
         run: exit 1
