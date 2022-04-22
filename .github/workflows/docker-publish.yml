@@ -68,17 +68,17 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       -
         name: Set selected color
-        run: echo ${{steps.filter.outputs.changes}}
-      -
-        name: Run Buildx
-#         if: ${{ steps.filter.outputs.php == 'true' }}
-        if: contains(fromJSON(steps.filter.outputs.changes), ${{ matrix.TAGS }})
-        run: |
-          docker buildx build \
-            -f php/${{ matrix.TAGS }}/Dockerfile \
-            php/. \
-            --platform linux/amd64,linux/arm64 \
-            --push --tag ghcr.io/phpdocdev/php:${{ matrix.TAGS }}
+        run: echo ${{steps.filter.outputs.changed_files}}
+#       -
+#         name: Run Buildx
+# #         if: ${{ steps.filter.outputs.php == 'true' }}
+#         if: contains(fromJSON(steps.filter.outputs.changes), ${{ matrix.TAGS }})
+#         run: |
+#           docker buildx build \
+#             -f php/${{ matrix.TAGS }}/Dockerfile \
+#             php/. \
+#             --platform linux/amd64,linux/arm64 \
+#             --push --tag ghcr.io/phpdocdev/php:${{ matrix.TAGS }}
   other:
     runs-on: ubuntu-latest
     strategy:
