@@ -13,14 +13,40 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+#   changes:
+#       runs-on: ubuntu-latest
+#       outputs:
+#         # Expose matched filters as job 'packages' output variable
+#         packages: ${{ steps.filter.outputs.changes }}
+#         packages_files: ${{ steps.filter.outputs.changes_files }}
+#       steps:
+#       # For pull requests it's not necessary to checkout the code
+#       - uses: dorny/paths-filter@v2.10.2
+#         id: filter
+#         with:
+#           filters: |
+#              php: 
+#               - 'php/**'
+#           list-files: json
+#       - run: echo '${{ toJson(steps.filter.outputs) }}' > changes.json
+#       - id: changes
+#         run: echo "::set-output name=list::$( jq '[ to_entries | .[] | select(.value == "true") | .key ]' changes.json -c )"
   setup:
+#     needs: changes
     runs-on: ubuntu-latest
     strategy:
       matrix:
         TAGS: [54, 56, 72, 74, 81]
+#         FILES: ${{ fromJSON(needs.changes.outputs.changes) }}
     outputs:
       matrix: ${{ steps.getfile.outputs.files }}
     steps:
+      - uses: dorny/paths-filter@v2.10.2
+        id: filter
+        with:
+          filters: |
+           php:
+            - 'php/**/Dockerfile'
       - name: checkout
         uses: actions/checkout@v3
       -
@@ -41,7 +67,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       -
+        name: Set selected color
+        run: echo steps.filter.outputs.changes
+      -
         name: Run Buildx
+#         if: ${{ steps.filter.outputs.php == 'true' }}
+        if: contains(fromJSON(steps.filter.outputs.changes), ${{ matrix.TAGS }})
         run: |
           docker buildx build \
             -f php/${{ matrix.TAGS }}/Dockerfile \
