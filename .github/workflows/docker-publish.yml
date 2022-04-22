@@ -67,7 +67,7 @@ jobs:
         run: echo ${{ steps.filter.outputs.php_files }}
       -
         name: Available platforms
-        run: echo ${{contains(steps.filter.outputs.php_files, format('php/{0}/Dockerfile', matrix.TAGS))}}
+        run: echo ${{contains(fromJSON(steps.filter.outputs.changed_files), '.github/workflows/docker-publish.yml')}}
       -
         name: Get path
         if: steps.filter.outputs.php
