@@ -64,7 +64,7 @@ jobs:
         run: echo ${{contains(steps.filter.outputs.php_files, 'php/${{ matrix.TAGS }}/Dockerfile')}}
       -
         name: Available platforms
-        run: echo ${{ toJSON(steps.filter.outputs.php_files) }}
+        run: echo ${{ steps.filter.outputs.changed }}
       -
         name: Available platforms
         run: echo ${{ steps.filter.outputs.php }}
