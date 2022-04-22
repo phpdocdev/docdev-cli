@@ -1,7 +1,5 @@
 FROM httpd:2.4
 
-
-
 # Set umask to make generated files accessible on local machine
 RUN echo "umask 002" >> /usr/local/apache2/envvars
 
