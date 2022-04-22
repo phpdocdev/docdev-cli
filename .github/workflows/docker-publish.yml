@@ -62,9 +62,9 @@ jobs:
       -
         name: Available platforms
         run: echo ${{ steps.buildx.outputs.changed_files }}
-      -
-        name: Available platforms
-        run: echo contains(steps.filter.outputs.php_files, "php/${{ matrix.TAGS }}/Dockerfile")
+#       -
+#         name: Available platforms
+#         run: echo contains(steps.filter.outputs.php_files, 'php/${{ matrix.TAGS }}/Dockerfile')
       -
         name: Available platforms
         run: echo ${{ steps.filter.outputs.php }}
@@ -81,7 +81,7 @@ jobs:
       -
         name: Run Buildx
 #         if: ${{ steps.filter.outputs.php == 'true' }}
-        if: contains(steps.filter.outputs.php_files, "php/${{ matrix.TAGS }}/Dockerfile")
+        if: contains(steps.filter.outputs.php_files, 'php/${{ matrix.TAGS }}/Dockerfile')
         run: |
           docker buildx build \
             -f php/${{ matrix.TAGS }}/Dockerfile \
