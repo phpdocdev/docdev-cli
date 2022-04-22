@@ -16,8 +16,8 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      changed_other: ${{ steps.filter.outputs.changed_other }}
-      changed_php: ${{ steps.filter.outputs.changed_php }}
+      changed_other: ${{ steps.filter.outputs.other_files }}
+      changed_php: ${{ steps.filter.outputs.php_files }}
     steps:
       - name: checkout
         uses: actions/checkout@v3
