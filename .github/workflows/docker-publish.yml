@@ -21,7 +21,9 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
-      - uses: marceloprado/has-changed-path@v1
+        with:
+          fetch-depth: 100
+      - uses: YassinEldeeb/has-changed-path@v2.1
         id: changed-paths
         with:
           paths: .github php
@@ -31,9 +33,9 @@ jobs:
           list-files: json
           filters: |
             php:
-              - 'php/**/Dockerfile'
+              - 'php/**'
             other:
-              - '**/Dockerfile'
+              - '**'
             all:
               - '**'
   setup:
@@ -63,7 +65,9 @@ jobs:
           qemu-version: latest
       -
         name: Changed path
-        run: echo ${{needs.changes.outputs.changed }}
+        run: |
+          echo ${{needs.changes.outputs.changed }}
+          echo ${{toJSON(needs.changes.changed-paths)}}
       -
         name: Available platforms
         run: exit 1
@@ -89,7 +93,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       -
         name: Run Buildx
-        if: contains(fromJSON(needs.changes.outputs.changed_php), format('php/{0}/Dockerfile', matrix.TAGS))
+        if: contains(fromJSON(needs.changes.outputs.changed_php), format('php/{0}', matrix.TAGS))
         run: |
           docker buildx build \
             -f php/${{ matrix.TAGS }}/Dockerfile \
@@ -123,7 +127,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       -
         name: Run Buildx
-        if: contains(fromJSON(needs.changes.outputs.changed_other), format('{0}/Dockerfile', matrix.TAGS))
+        if: contains(fromJSON(needs.changes.outputs.changed_other), format('{0}', matrix.TAGS))
         run: |
           docker buildx build \
             -f ${{ matrix.TAGS }}/Dockerfile \
