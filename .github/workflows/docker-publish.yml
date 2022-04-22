@@ -60,23 +60,21 @@ jobs:
           buildx-version: latest
           qemu-version: latest
       
-      - uses: YassinEldeeb/has-changed-path@v2.1
+      - uses: marceloprado/has-changed-path@v1
         id: changed-paths
         with:
           paths: ${{format('php/{0}', matrix.TAGS)}}
           
-      - uses: YassinEldeeb/has-changed-path@v2.1
-        id: changed-pathss
+      - uses: dorny/paths-filter@v2
+        id: filters
         with:
-          paths: .github
-      - uses: YassinEldeeb/has-changed-path@v2.1
-        id: changed-pathsss
-        with:
-          paths: .github/**
+          filters: |
+            github:
+              - '.github/**'
       -
         name: Changed path
         run: |
-          echo ${{ steps.changed-paths.outputs.changed }}
+          echo ${{ steps.filters.outputs.github }}
       -
         name: Available platforms
         run: exit 1
