@@ -73,8 +73,7 @@ jobs:
         run: |
           echo php/${{ matrix.TAGS }}/Dockerfile
       -
-        if: |
-          ${{ steps.filter.outputs.php }} && ${{contains(steps.filter.outputs.php_files, php/${{ matrix.TAGS }}/Dockerfile)}}
+        if: steps.filter.outputs.php && contains(steps.filter.outputs.php_files, 'php/${{ matrix.TAGS }}/Dockerfile')
         run: exit 1
       -
         name: Login to GitHub Container Registry
