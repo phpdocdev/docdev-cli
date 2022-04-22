@@ -41,7 +41,7 @@ jobs:
     outputs:
       matrix: ${{ steps.getfile.outputs.files }}
     steps:
-      - uses: dorny/paths-filter@v2.10.2
+      - uses: dorny/paths-filter@v2
         id: filter
         with:
           filters: |
