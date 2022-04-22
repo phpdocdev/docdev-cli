@@ -43,7 +43,7 @@ jobs:
             changed:
               - ${{format('php/{0}/**', matrix.TAGS)}}
       - name: Run Buildx
-        if: steps.filter.outputs.changed
+        if: steps.filter.outputs.changed == 'true'
         run: |
           docker buildx build \
             -f php/${{ matrix.TAGS }}/Dockerfile \
@@ -82,7 +82,7 @@ jobs:
             changed:
               - ${{format('php/{0}/**', matrix.TAGS)}}
       - name: Run Buildx
-        if: steps.filter.outputs.changed
+        if: steps.filter.outputs.changed == 'true'
         run: |
           docker buildx build \
             -f ${{ matrix.TAGS }}/Dockerfile \
