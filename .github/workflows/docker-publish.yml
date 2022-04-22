@@ -68,7 +68,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       -
         name: Set selected color
-        run: echo steps.filter.outputs.changes
+        run: echo ${{steps.filter.outputs.changes}}
       -
         name: Run Buildx
 #         if: ${{ steps.filter.outputs.php == 'true' }}
