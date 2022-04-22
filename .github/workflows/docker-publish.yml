@@ -13,33 +13,11 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-#   changes:
-#       runs-on: ubuntu-latest
-#       outputs:
-#         # Expose matched filters as job 'packages' output variable
-#         packages: ${{ steps.filter.outputs.changes }}
-#         packages_files: ${{ steps.filter.outputs.changes_files }}
-#       steps:
-#       # For pull requests it's not necessary to checkout the code
-#       - uses: dorny/paths-filter@v2.10.2
-#         id: filter
-#         with:
-#           filters: |
-#              php: 
-#               - 'php/**'
-#           list-files: json
-#       - run: echo '${{ toJson(steps.filter.outputs) }}' > changes.json
-#       - id: changes
-#         run: echo "::set-output name=list::$( jq '[ to_entries | .[] | select(.value == "true") | .key ]' changes.json -c )"
-  setup:
-#     needs: changes
+  changes:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        TAGS: [54, 56, 72, 74, 81]
-#         FILES: ${{ fromJSON(needs.changes.outputs.changes) }}
     outputs:
-      matrix: ${{ steps.getfile.outputs.files }}
+      changed_other: ${{ steps.filter.outputs.changed_other }}
+      changed_php: ${{ steps.filter.outputs.changed_php }}
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -50,8 +28,28 @@ jobs:
           filters: |
             php:
               - 'php/**/Dockerfile'
-            changed:
+            other:
+              - '**/Dockerfile'
+            all:
               - '**'
+  setup:
+    needs: changes
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        TAGS: [54, 56, 72, 74, 81]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+#       - uses: dorny/paths-filter@v2
+#         id: filter
+#         with:
+#           list-files: json
+#           filters: |
+#             php:
+#               - 'php/**/Dockerfile'
+#             changed:
+#               - '**'
       -
         name: Set up Docker Buildx
         id: buildx
@@ -59,25 +57,25 @@ jobs:
         with:
           buildx-version: latest
           qemu-version: latest
-      -
-        name: Available platforms
-        run: echo ${{ steps.filter.outputs.changed_files }}
-      -
-        name: Available platforms
-        run: echo ${{ steps.filter.outputs.php_files }}
-      -
-        name: Available platforms
-        run: echo ${{contains(fromJSON(steps.filter.outputs.changed_files), '.github/workflows/docker-publish.yml')}}
-      -
-        name: Get path
-        if: steps.filter.outputs.php
-        run: |
-          echo php/${{ matrix.TAGS }}/Dockerfile
-      -
-        name: Get path2
-        if: steps.filter.outputs.php
-        run: |
-          echo ${{format('php/{0}/Dockerfile', matrix.TAGS)}}
+#       -
+#         name: Available platforms
+#         run: echo ${{ steps.filter.outputs.changed_files }}
+#       -
+#         name: Available platforms
+#         run: echo ${{ steps.filter.outputs.php_files }}
+#       -
+#         name: Available platforms
+#         run: echo ${{contains(fromJSON(steps.filter.outputs.changed_files), '.github/workflows/docker-publish.yml')}}
+#       -
+#         name: Get path
+#         if: steps.filter.outputs.php
+#         run: |
+#           echo php/${{ matrix.TAGS }}/Dockerfile
+#       -
+#         name: Get path2
+#         if: steps.filter.outputs.php
+#         run: |
+#           echo ${{format('php/{0}/Dockerfile', matrix.TAGS)}}
       -
         name: Login to GitHub Container Registry
         uses: docker/login-action@v1
@@ -87,9 +85,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       -
         name: Run Buildx
-        if: steps.filter.outputs.php && contains(fromJSON(steps.filter.outputs.php_files), format('php/{0}/Dockerfile', matrix.TAGS))
-#         if: ${{ steps.filter.outputs.php == 'true' }}
-#         if: contains(steps.filter.outputs.php_files, 'php/${{ matrix.TAGS }}/Dockerfile')
+        if: contains(fromJSON(needs.changes.outputs.changed_php), format('php/{0}/Dockerfile', matrix.TAGS))
         run: |
           docker buildx build \
             -f php/${{ matrix.TAGS }}/Dockerfile \
@@ -98,6 +94,7 @@ jobs:
             --push --tag ghcr.io/phpdocdev/php:${{ matrix.TAGS }}
   other:
     runs-on: ubuntu-latest
+    needs: changes
     strategy:
       matrix:
         TAGS: ["apache", "bind", "mailhog"]
@@ -114,9 +111,6 @@ jobs:
           buildx-version: latest
           qemu-version: latest
       -
-        name: Available platforms
-        run: echo ${{ steps.buildx.outputs.platforms }}
-      -
         name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
@@ -125,6 +119,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       -
         name: Run Buildx
+        if: contains(fromJSON(needs.changes.outputs.changed_other), format('{0}/Dockerfile', matrix.TAGS))
         run: |
           docker buildx build \
             -f ${{ matrix.TAGS }}/Dockerfile \
