@@ -87,7 +87,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       -
         name: Run Buildx
-        if: steps.filter.outputs.php && contains(steps.filter.outputs.php_files, format('php/{0}/Dockerfile', matrix.TAGS))
+        if: steps.filter.outputs.php && contains(fromJSON(steps.filter.outputs.php_files), format('php/{0}/Dockerfile', matrix.TAGS))
 #         if: ${{ steps.filter.outputs.php == 'true' }}
 #         if: contains(steps.filter.outputs.php_files, 'php/${{ matrix.TAGS }}/Dockerfile')
         run: |
