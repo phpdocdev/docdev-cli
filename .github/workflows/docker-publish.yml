@@ -47,8 +47,10 @@ jobs:
         id: filter
         with:
           filters: |
-           php:
-            - 'php/**/Dockerfile'
+            php:
+              - 'php/**/Dockerfile'
+            changed:
+              - '**'
       -
         name: Set up Docker Buildx
         id: buildx
@@ -58,7 +60,7 @@ jobs:
           qemu-version: latest
       -
         name: Available platforms
-        run: echo ${{ steps.buildx.outputs.platforms }}
+        run: echo ${{ steps.buildx.outputs.changed_files }}
       -
         name: Login to GitHub Container Registry
         uses: docker/login-action@v1
