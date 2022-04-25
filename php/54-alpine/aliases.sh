@@ -1,0 +1,1 @@
+alias apt="apk add --no-cache --virtual .build-deps"

@@ -5,7 +5,7 @@ npm-debug.log
 .env
 cert/*
 build/*
-build
+buil
 
 # Custom Container
 opt/custom/*

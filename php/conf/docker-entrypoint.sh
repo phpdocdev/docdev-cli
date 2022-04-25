@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 
 set -e
 set -u
@@ -48,8 +48,10 @@ log "info" "Debug level: ${DEBUG_LEVEL}" "${DEBUG_LEVEL}"
 ### Install extra modules
 ###
 EXT_MODULES="$( env_get "ENABLE_MODULES" "" )"
-log "info" "Installing extra PHP modules" "${DEBUG_LEVEL}"
-run "sudo /usr/local/bin/install-php-extensions ${EXT_MODULES}" "${DEBUG_LEVEL}"
+if [ "${EXT_MODULES}" != "" ]; then
+	log "info" "Installing extra PHP modules" "${DEBUG_LEVEL}"
+	run "sudo /usr/local/bin/install-php-extensions ${EXT_MODULES}" "${DEBUG_LEVEL}"
+fi
 
 ###
 ### Startup
