@@ -20,7 +20,7 @@ RUN groupadd -g ${CUSTOM_GID} ${CUSTOM_USER_NAME} \
 RUN echo "alias artisan='php artisan'" >> /home/${CUSTOM_USER_NAME}/.zshrc \
   && echo "alias magento='php bin/magento'" >> /home/${CUSTOM_USER_NAME}/.zshrc
 
-RUN apt update && apt install -y zsh
+RUN apt update && apt install -y zsh git
 # Install ZSH & config
 RUN ZSH="/home/${CUSTOM_USER_NAME}/.oh-my-zsh" sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" chsh -s $(which zsh) ${CUSTOM_USER_NAME} \
   && mv /root/.zshrc /home/${CUSTOM_USER_NAME}/.zshrc \
@@ -33,8 +33,7 @@ RUN ZSH="/home/${CUSTOM_USER_NAME}/.oh-my-zsh" sh -c "$(curl -fsSL https://raw.g
 
 # Update permissions for supervisor and cron
 RUN chown ${CUSTOM_USER_NAME}:${CUSTOM_USER_NAME} /etc/supervisor/supervisord.pid \
-  && chmod gu+rw /var/run \
-  && chmod gu+s /usr/sbin/cron
+  && chmod gu+rw /var/run
 
 COPY ./conf/docker-entrypoint.d/*.sh /docker-entrypoint.d/
 COPY ./conf/docker-entrypoint.sh /docker-entrypoint.sh
