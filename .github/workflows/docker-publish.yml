@@ -46,6 +46,7 @@ jobs:
         if: steps.filter.outputs.changed == 'true'
         run: |
           docker buildx build \
+            --squash \
             -f php/${{ matrix.TAGS }}/Dockerfile \
             php/. \
             --platform linux/amd64,linux/arm64 \
