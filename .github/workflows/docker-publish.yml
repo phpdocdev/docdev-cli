@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        TAGS: [54, "54-alpine", 56, 72, 74, 81]
+        TAGS: [54, "54-alpine", 56, "56-alpine", 72, 74, 81]
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -85,6 +85,7 @@ jobs:
         if: steps.filter.outputs.changed == 'true'
         run: |
           docker buildx build \
+            --squash \
             -f ${{ matrix.TAGS }}/Dockerfile \
             ${{ matrix.TAGS }}/. \
             --platform linux/amd64,linux/arm64 \
