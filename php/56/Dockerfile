@@ -1,6 +1,9 @@
 # syntax = edrevo/dockerfile-plus
 FROM php:5.6-fpm
 
+LABEL org.opencontainers.image.source "https://github.com/phpdocdev/docdev-cli"
+LABEL org.opencontainers.image.description "Debian PHP 5.6 FPM"
+
 ENV PATH /usr/local/go/bin:/root/.composer/vendor/bin:$PATH
 
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
