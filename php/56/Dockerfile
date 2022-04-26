@@ -3,7 +3,22 @@ FROM php:5.6-fpm
 
 ENV PATH /usr/local/go/bin:/root/.composer/vendor/bin:$PATH
 
+ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+
 RUN apt update && apt install -y --no-install-recommends \
+  nano \
+  net-tools \
+  ssh \
+  msmtp \
+  sudo \
+  supervisor \
+  unzip \
+  zsh \
+  fonts-powerline \
+  powerline
+
+RUN savedAptMark="$(apt-mark showmanual)" \
+  && apt update && apt install -y --no-install-recommends \
     cron \
     git \
     gnupg \
@@ -18,23 +33,30 @@ RUN apt update && apt install -y --no-install-recommends \
     libvpx-dev \
     libxml2-dev \
     libxslt-dev \
-    nano \
-    net-tools \
-    ssh \
-    ssmtp \
-    sudo \
-    supervisor \
-    unzip \
-    zip \
   && yes '' | pecl install -f memcached-2.2.0 redis-4.3.0 xdebug-2.5.5 \
   && docker-php-ext-install -j$(nproc) bcmath calendar mysql intl mcrypt mysqli opcache pdo_mysql soap xsl zip\
   && docker-php-ext-enable mcrypt memcached redis xdebug\
-  && apt clean \
-  && rm -rf /var/lib/apt/lists/*
-
-# Configure GD Library
-RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --with-vpx-dir=/usr/include/ \
-  && docker-php-ext-install -j$(nproc) gd
+  && chmod +x /usr/local/bin/install-php-extensions && sync \
+  && install-php-extensions ldap ioncube_loader \
+  && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --with-vpx-dir=/usr/include/ \
+  && docker-php-ext-install -j$(nproc) gd; \
+  \
+	cd /; \
+	docker-php-source delete \
+  \
+  apt clean; \
+  apt-mark auto '.*' > /dev/null; \
+  [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark; \
+	find /usr/local -type f -executable -exec ldd '{}' ';' \
+		| awk '/=>/ { print $(NF-1) }' \
+		| sort -u \
+		| xargs -r dpkg-query --search \
+		| cut -d: -f1 \
+		| sort -u \
+		| xargs -r apt-mark manual \
+	; \
+  apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
+  rm -rf /var/lib/apt/lists/*
 
 # Install Composer
 RUN curl --silent --show-error https://getcomposer.org/installer | php \
@@ -44,10 +66,6 @@ RUN curl --silent --show-error https://getcomposer.org/installer | php \
 # Install MailHog
 RUN curl -L -o /usr/bin/mhsendmail https://github.com/mailhog/mhsendmail/releases/download/v0.2.0/mhsendmail_linux_amd64 \
   && chmod +x /usr/bin/mhsendmail
-
-# Setup Crons
-RUN touch /root/custom_crontab \
-  && /usr/bin/crontab -u www-data /root/custom_crontab
 
 # Update site's directory permissions
 RUN chown -R www-data /var/www/
@@ -59,9 +77,6 @@ COPY ./conf/custom.ini /usr/local/etc/php/conf.d/zza-custom.ini
 COPY ./conf/supervisord.conf /etc/supervisor/supervisord.conf
 RUN touch /etc/supervisor/supervisord.pid
 
-ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
-RUN chmod +x /usr/local/bin/install-php-extensions && sync && \
-    install-php-extensions ldap ioncube_loader
 
 ARG PHPV=56
 INCLUDE+ ./common/shell.Dockerfile
