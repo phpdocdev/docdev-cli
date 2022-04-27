@@ -1,21 +1,26 @@
-FROM debian:buster-slim
-MAINTAINER "cytopia" <cytopia@everythingcli.org>
+FROM alpine
 
+ENV \
+	USER=named \
+	GROUP=named
 
 ###
 ### Install
 ###
 RUN set -x \
-	&& apt-get update \
-	&& apt-get install --no-install-recommends --no-install-suggests -y \
-		bind9 \
-		dnsutils \
-		iputils-ping \
-	&& apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $fetchDeps \
-	&& rm -r /var/lib/apt/lists/* \
+	&& apk add --no-cache \
+		bash \
+		bind \
+		bind-tools \
+	# Log directory
 	&& mkdir /var/log/named \
-	&& chown bind:bind /var/log/named \
-	&& chmod 0755 /var/log/named
+	&& chown ${USER}:${GROUP} /var/log/named \
+	&& chmod 0755 /var/log/named \
+	# Cache directory
+	&& mkdir /var/cache/bind \
+	&& chown root:${GROUP} /var/cache/bind \
+	&& chmod 0775 /var/cache/bind
+
 
 
 ###
