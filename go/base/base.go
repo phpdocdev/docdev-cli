@@ -39,7 +39,7 @@ func SelfUpdate(c *cli.Context) error {
 	fmt.Println("Downloading latest release from github")
 
 	release := fmt.Sprintf("docdev-%s-%s", runtime.GOOS, runtime.GOARCH)
-	cmd := fmt.Sprintf("gh release download -p \"%s\" --repo \"https://github.ark.org/brandon-kiefer/docker-dev\"", release)
+	cmd := fmt.Sprintf("gh release download -p \"%s\" --repo \"https://github.com/phpdocdev/docdev\"", release)
 	_, err := exec.Command("bash", "-c", cmd).Output()
 	if err != nil {
 		fmt.Printf("%s", err)
