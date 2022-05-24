@@ -55,7 +55,7 @@ jobs:
 #     needs: setup
     strategy:
       matrix:
-        TAGS: ["apache", "bind", "mailhog"]
+        TAGS: ["apache", "bind", "mailhog", "vpn"]
     outputs:
       matrix: ${{ steps.getfile.outputs.files }}
     steps:
