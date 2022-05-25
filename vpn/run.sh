@@ -1,6 +1,7 @@
 #!/bin/sh
 
 dest=${dest:-docker.ovpn}
+bindip=$(getent hosts "bind" | awk '{ print $1 }')
 
 if [ ! -f "/host/$dest" ]; then
     echo "*** REGENERATING ALL CONFIGS ***"
