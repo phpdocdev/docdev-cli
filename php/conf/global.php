@@ -6,7 +6,6 @@ if (isset($_REQUEST['profile']) || isset($_ENV['PROFILE_ENABLED']) || !empty($_C
 
         if (class_exists('\Xhgui\Profiler\Profiler')) {
             $config = [
-                'profiler' => \Xhgui\Profiler\Profiler::PROFILER_TIDEWAYS_XHPROF,
                 'save.handler' => \Xhgui\Profiler\Profiler::SAVER_MONGODB,
                 'save.handler.mongodb' => array(
                     'dsn' => 'mongodb://mongo:27017',

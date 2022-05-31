@@ -70,4 +70,8 @@ RUN curl -o ioncube.tar.gz http://downloads3.ioncube.com/loader_downloads/ioncub
 ARG PHPV=54
 INCLUDE+ ./common/shell.Dockerfile
 
-CMD ["/usr/bin/supervisord"]
+INCLUDE+ ./common/xhprof.Dockerfile
+
+COPY ./conf/global.php /home/dev/global.php
+
+CMD ["sudo", "php-fpm", "-g", "/var/run/php-fpm.pid"]
