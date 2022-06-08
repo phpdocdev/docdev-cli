@@ -91,7 +91,6 @@ RUN touch /etc/supervisor/supervisord.pid
 ARG PHPV=74
 
 INCLUDE+ ./common/shell.Dockerfile
-
 INCLUDE+ ./common/xhprof.Dockerfile
 
 COPY ./conf/global.php /home/dev/global.php

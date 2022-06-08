@@ -69,7 +69,6 @@ RUN curl -o ioncube.tar.gz http://downloads3.ioncube.com/loader_downloads/ioncub
 
 ARG PHPV=54
 INCLUDE+ ./common/shell.Dockerfile
-
 INCLUDE+ ./common/xhprof.Dockerfile
 
 COPY ./conf/global.php /home/dev/global.php
