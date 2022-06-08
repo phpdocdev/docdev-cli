@@ -1,0 +1,32 @@
+From: =?utf-8?q?Ond=C5=99ej_Sur=C3=BD?= <ondrej@sury.org>
+Date: Fri, 13 May 2016 10:06:39 +0200
+Subject: Don't use rdtsc on arm*
+
+---
+ xhprof-0.9.4/extension/xhprof.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/xhprof-0.9.4/extension/xhprof.c b/xhprof-0.9.4/extension/xhprof.c
+index a053ede..c275d48 100644
+--- a/xhprof-0.9.4/extension/xhprof.c
++++ b/xhprof-0.9.4/extension/xhprof.c
+@@ -1219,10 +1219,18 @@ void hp_sample_check(hp_entry_t **entries  TSRMLS_DC) {
+  * @author cjiang
+  */
+ inline uint64 cycle_timer() {
+-  uint32 __a,__d;
+   uint64 val;
++#if defined(__arm__) || defined(__aarch64__)
++  struct timespec ts;
++  clock_gettime(CLOCK_REALTIME, &ts);
++  val = ts.tv_sec;
++  val = val * 1000000000ULL;
++  val += ts.tv_nsec;
++#else
++  uint32 __a,__d;
+   asm volatile("rdtsc" : "=a" (__a), "=d" (__d));
+   (val) = ((uint64)__a) | (((uint64)__d)<<32);
++#endif
+   return val;
+ }
+

@@ -80,7 +80,6 @@ COPY ./conf/custom.ini /usr/local/etc/php/conf.d/zza-custom.ini
 COPY ./conf/supervisord.conf /etc/supervisor/supervisord.conf
 RUN touch /etc/supervisor/supervisord.pid
 
-
 ARG PHPV=56
 INCLUDE+ ./common/shell.Dockerfile
 
