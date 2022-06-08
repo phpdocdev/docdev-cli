@@ -92,7 +92,6 @@ ARG PHPV=74
 
 INCLUDE+ ./common/shell.Dockerfile
 INCLUDE+ ./common/xhprof.Dockerfile
-
 COPY ./conf/global.php /home/dev/global.php
 
 CMD ["sudo", "php-fpm", "-g", "/var/run/php-fpm.pid"]
