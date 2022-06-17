@@ -98,7 +98,7 @@ function php-conf() {
 		echo 'opcache.interned_strings_buffer=8'
 		echo 'opcache.fast_shutdown=1'
 		echo 'opcache.validate_timestamps=2'
-		echo 'opcache.revalidate_freq=15'
+		echo 'opcache.revalidate_freq=0'
 		echo 'opcache.use_cwd=1'
 		echo 'opcache.max_accelerated_files=100000'
 		echo 'opcache.max_wasted_percentage=5'
