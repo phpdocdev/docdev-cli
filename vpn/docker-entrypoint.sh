@@ -123,11 +123,6 @@ log "info" "Debug level: ${DEBUG_LEVEL}" "${DEBUG_LEVEL}"
 ## Entry Point
 #############################################################
 
-###
-### Start socat
-###
-log "info" "Starting socat" "${DEBUG_LEVEL}"
-run "socat TCP-LISTEN:13194,fork,reuseaddr TCP-CONNECT:127.0.0.1:1194" "${DEBUG_LEVEL}"
 
 ###
 ### OVPN config
@@ -135,9 +130,15 @@ run "socat TCP-LISTEN:13194,fork,reuseaddr TCP-CONNECT:127.0.0.1:1194" "${DEBUG_
 log "info" "Building ovpn config" "${DEBUG_LEVEL}"
 start
 
+
+###
+### Start socat
+###
+log "info" "Starting socat" "${DEBUG_LEVEL}"
+run "socat TCP-LISTEN:13194,fork,reuseaddr TCP-CONNECT:127.0.0.1:1194" "${DEBUG_LEVEL}"
+
 ###
 ### Start OVPN
 ###
 log "info" "Starting ovpn..." "${DEBUG_LEVEL}"
-# run "exec ovpn_run" "${DEBUG_LEVEL}"
 exec "${@}"

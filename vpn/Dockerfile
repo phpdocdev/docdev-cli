@@ -15,7 +15,7 @@ ENV EASYRSA_KEY_SIZE 2048
 # Prevents refused client connection because of an expired CRL
 ENV EASYRSA_CRL_DAYS 3650
 
-VOLUME ["/etc/openvpn"]
+ADD ./ovpn_env.sh /etc/openvpn/
 
 # Internally uses port 1194/udp, remap using `docker run -p 443:1194/tcp`
 EXPOSE 1194/udp
