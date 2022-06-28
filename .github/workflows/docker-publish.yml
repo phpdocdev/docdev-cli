@@ -10,10 +10,6 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-#   setup:
-#     runs-on: ubuntu-latest
-#     steps:
-      
   php:
     runs-on: ubuntu-latest
     strategy:
@@ -46,6 +42,7 @@ jobs:
               - php/common/**
       - name: Run Buildx
         if: steps.filter.outputs.changed == 'true'
+        continue-on-error: true
         run: |
           docker buildx build \
             -f php/${{ matrix.TAGS }}/Dockerfile \
@@ -54,7 +51,6 @@ jobs:
             --push --tag ghcr.io/phpdocdev/php:${{ matrix.TAGS }}
   other:
     runs-on: ubuntu-latest
-#     needs: setup
     strategy:
       matrix:
         TAGS: ["apache", "bind", "mailhog", "vpn"]
@@ -85,6 +81,7 @@ jobs:
               - ${{format('{0}/**', matrix.TAGS)}}
       - name: Run Buildx
         if: steps.filter.outputs.changed == 'true'
+        continue-on-error: true
         run: |
           docker buildx build \
             -f ${{ matrix.TAGS }}/Dockerfile \

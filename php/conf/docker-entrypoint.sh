@@ -168,7 +168,10 @@ fi
 ### Setup xhprof viewer
 ###
 log "info" "Setting up xhprof" "${DEBUG_LEVEL}"
-run "sudo rm -rf /var/www/html/xhprof && sudo mv /home/dev/xhprof /var/www/html/xhprof" "${DEBUG_LEVEL}"
+if [ -d "/home/dev/xhprof" ] 
+then
+	run "sudo rm -rf /var/www/html/xhprof && sudo mv /home/dev/xhprof /var/www/html/xhprof" "${DEBUG_LEVEL}"
+fi
 
 ###
 ### Startup
