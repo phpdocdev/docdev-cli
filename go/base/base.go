@@ -36,10 +36,9 @@ func Refresh(c *cli.Context) error {
 }
 
 func SelfUpdate(c *cli.Context) error {
-
-	fmt.Println("Downloading latest release from github")
-
 	release := fmt.Sprintf("docdev-%s-%s", runtime.GOOS, runtime.GOARCH)
+	fmt.Printf("Downloading latest release from github: \x1b[36m%s\x1b[0m\n", release)
+
 	cmd := fmt.Sprintf("gh release download -p \"%s\" --repo \"https://github.com/phpdocdev/docdev\"", release)
 	_, err := exec.Command("bash", "-c", cmd).Output()
 	if err != nil {
@@ -48,7 +47,7 @@ func SelfUpdate(c *cli.Context) error {
 
 	fmt.Println("Attempting to replace the existing binary")
 	os.Rename(release, "docdev")
-	newpath, err := exec.Command("which", "docdev").Output()
+	newpath, _ := exec.Command("which", "docdev").Output()
 	exists := strings.Replace(string(newpath), "\n", "", -1)
 	if exists != "" {
 		input, err := ioutil.ReadFile("docdev")
@@ -164,15 +163,15 @@ func GenerateHosts(c *cli.Context) error {
 		os.MkdirAll(utils.HostPath, 0755)
 	}
 
-	hostctl, err := exec.Command("which", "hostctl").Output()
+	hostctl, _ := exec.Command("which", "hostctl").Output()
 	if string(hostctl[:]) == "" {
-		_, err = exec.Command("brew", "install", "guumaster/tap/hostctl").Output()
+		_, err := exec.Command("brew", "install", "guumaster/tap/hostctl").Output()
 		if err != nil {
 			fmt.Printf("%s", err)
 		}
 	}
 
-	_, err = exec.Command("hostctl", "backup", "--path", utils.HostPath+"/").Output()
+	_, err := exec.Command("hostctl", "backup", "--path", utils.HostPath+"/").Output()
 	if err != nil {
 		fmt.Printf("%s", err)
 	}
@@ -196,7 +195,7 @@ func GenerateHosts(c *cli.Context) error {
 		fmt.Printf("%s", err)
 	}
 
-	if c.Bool("dry-run") == false {
+	if !c.Bool("dry-run") {
 		_, err = exec.Command("sudo", "hostctl", "restore", "--from", utils.HostPath+"/modified.hosts").Output()
 		if err != nil {
 			fmt.Printf("%s", err)
