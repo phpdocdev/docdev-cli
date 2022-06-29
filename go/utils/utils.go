@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"strings"
 
+	docker "github.com/fsouza/go-dockerclient"
 	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/joho/godotenv"
 )
@@ -164,4 +165,44 @@ func IsDirEmpty(name string) bool {
 		return true
 	}
 	return false // Either not empty or error, suits both cases
+}
+
+func GetDockerClient() *docker.Client {
+	client, err := docker.NewClientFromEnv()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return client
+}
+
+func GetContainers() ([]docker.APIContainers, error) {
+	client := GetDockerClient()
+
+	opts := docker.ListContainersOptions{
+		All: true,
+		Filters: map[string][]string{"label": {"com.docker.compose.project=docdev"}},
+	}
+
+	return client.ListContainers(opts)
+}
+
+func ExecContainer(ID string, command string) {
+	client := GetDockerClient()
+	exec, _ := client.CreateExec(docker.CreateExecOptions{
+		Container: ID,
+		AttachStdin: true,
+		AttachStdout: true,
+		AttachStderr: true,
+		Tty: true,
+		Cmd: []string{command},
+	})
+
+	client.StartExec(exec.ID, docker.StartExecOptions{
+		Detach: false,
+		RawTerminal: true,
+		InputStream: os.Stdin,
+		OutputStream: os.Stdout,
+		ErrorStream: os.Stderr,
+	})
 }

@@ -35,6 +35,11 @@ GLOBAL OPTIONS:
    {{end}}{{end}}
 `
 
+	categories := map[string]string{
+		"Containers": "Containers",
+		"CLI":        "CLI",
+	}
+
 	app := &cli.App{
 		Name:                 "docdev",
 		Version:              Version,
@@ -113,10 +118,11 @@ GLOBAL OPTIONS:
 				},
 			},
 			{
-				Name:    "exec",
-				Aliases: []string{"e"},
-				Usage:   "Start docker container shell",
-				Action:  base.ExecContainer,
+				Name:     "exec",
+				Aliases:  []string{"e"},
+				Usage:    "Start docker container shell. Default: php-fpm",
+				Category: categories["Containers"],
+				Action:   base.ExecContainer,
 			},
 			{
 				Name:    "test",

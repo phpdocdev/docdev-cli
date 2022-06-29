@@ -1,6 +1,7 @@
 package base
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -280,26 +281,35 @@ func StartContainer(c *cli.Context) error {
 }
 
 func ExecContainer(c *cli.Context) error {
-	execCmd := `docker exec -ti php` + os.Getenv("PHPV") + ` zsh`
-	cmd := exec.Command("bash", "-c", execCmd)
-
-	env := os.Environ()
-	cmd.Env = env
-
-	fmt.Printf("%v\n", cmd)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
-
-	err := cmd.Start()
-	if err != nil {
-		return err
+	arg := c.Args().First()
+	command := "/bin/bash"
+	if arg == "" {
+		arg = "php-fpm"
 	}
 
-	if err := cmd.Wait(); err != nil {
-		return err
+	if arg == "php-fpm" {
+		command = "zsh"
 	}
-	return nil
+
+	containers, err := utils.GetContainers()
+
+	if err != nil || len(containers) == 0 {
+		return cli.Exit(errors.New("docdev containers are not running"), 86)
+	}
+
+	for _, container := range containers {
+		if arg == container.Labels["com.docker.compose.service"] {
+			utils.ExecContainer(container.ID, command)
+			return nil
+		}
+	}
+
+	var allowed []string
+	for _, container := range containers {
+		allowed = append(allowed, container.Labels["com.docker.compose.service"])
+	}
+
+	return cli.Exit(errors.New("\x1b[31mContainer not found. Please choose one of the following:\n\t\x1b[36m"+strings.Join(allowed, ", ")+"\x1b[0m"), 0)
 }
 
 func ChangePhpVersion(c *cli.Context) error {
