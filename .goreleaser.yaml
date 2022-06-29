@@ -2,34 +2,15 @@ universal_binaries:
   - replace: true
     id: docdev
 builds:
-  - id: arm64
+  - id: docdev
     no_unique_dist_dir: true
     env:
       - CGO_ENABLED=0
-    goarch:
-     - "arm64"
     goos:
       - linux
       - darwin
     ldflags:
       - -s -w -X main.Version={{.Version}}
-    binary: docdev_{{ .Os }}_{{ .Arch }}
-    main: main.go
-    dir: go
-  - id: other
-    no_unique_dist_dir: true
-    env:
-      - CGO_ENABLED=0
-    goarch:
-     - "amd64"
-    goos:
-      - linux
-      - darwin
-    ldflags:
-      - -s -w -X main.Version={{.Version}}
-    # hooks:
-    #   post:
-    #   - upx --best --lzma "{{ .Path }}"
     binary: docdev_{{ .Os }}_{{ .Arch }}
     main: main.go
     dir: go
