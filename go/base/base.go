@@ -37,6 +37,10 @@ func Refresh(c *cli.Context) error {
 
 func SelfUpdate(c *cli.Context) error {
 	release := fmt.Sprintf("docdev-%s-%s", runtime.GOOS, runtime.GOARCH)
+	if release == "docdev-darwin-arm64" {
+		release = "docdev-darwin-amd64"
+	}
+	
 	fmt.Printf("Downloading latest release from github: \x1b[36m%s\x1b[0m\n", release)
 
 	cmd := fmt.Sprintf("gh release download -p \"%s\" --repo \"https://github.com/phpdocdev/docdev\"", release)
@@ -48,21 +52,24 @@ func SelfUpdate(c *cli.Context) error {
 	fmt.Println("Attempting to replace the existing binary")
 	os.Rename(release, "docdev")
 	newpath, _ := exec.Command("which", "docdev").Output()
-	exists := strings.Replace(string(newpath), "\n", "", -1)
-	if exists != "" {
-		input, err := ioutil.ReadFile("docdev")
-		if err != nil {
-			fmt.Println(err)
-			return err
-		}
-
-		err = ioutil.WriteFile(exists, input, 0644)
-		if err != nil {
-			fmt.Println("Error creating", exists)
-			fmt.Println(err)
-			return err
-		}
+	targetPath := strings.Replace(string(newpath), "\n", "", -1)
+	if targetPath == "" {
+		targetPath = "/usr/local/bin/docdev"
 	}
+
+	input, err := ioutil.ReadFile("docdev")
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	err = ioutil.WriteFile(targetPath, input, 0755)
+	if err != nil {
+		fmt.Println("Error creating", targetPath)
+		fmt.Println(err)
+		return err
+	}
+	
 
 	fmt.Println("docdev has been updated!")
 	return nil

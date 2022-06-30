@@ -1,9 +1,10 @@
-name: go-release
+name: go-build
 
 on:
   push:
     paths:
-      - '.github'
+      - .github/workflows/go-release.yml
+      - .goreleaser.yaml
     tags:
       - '*'
 
