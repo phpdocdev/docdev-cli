@@ -2,6 +2,8 @@ name: go-release
 
 on:
   push:
+    paths:
+      - '.github'
     tags:
       - '*'
 

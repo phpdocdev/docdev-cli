@@ -1,6 +1,3 @@
-universal_binaries:
-  - replace: true
-    id: docdev
 builds:
   - id: docdev
     no_unique_dist_dir: true

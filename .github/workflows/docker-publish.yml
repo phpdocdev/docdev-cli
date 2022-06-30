@@ -4,6 +4,9 @@ name: publishmultipledockerimage
 on:
   push:
     branches: ['master']
+    paths-ignore:
+      - 'go/**'
+      - .github/workflows/go-release.yml
       
 env:
   REGISTRY: ghcr.io
