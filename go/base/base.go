@@ -223,11 +223,11 @@ func StartContainer(c *cli.Context) error {
 	}
 
 	if c.Bool("php-only") {
-		fmt.Printf("Removing existing php-fpm container.\n")
+		fmt.Printf("Removing existing php-fpm container\n")
 		downCmd := `docker-compose rm -s -f -v php-fpm`
 		exec.Command("bash", "-c", downCmd).Output()
 
-		fmt.Printf("Build php-fpm container.\n")
+		fmt.Printf("Build php-fpm container\n")
 		buildCmd := `docker-compose build php-fpm`
 		exec.Command("bash", "-c", buildCmd).Output()
 	} else {
@@ -238,11 +238,10 @@ func StartContainer(c *cli.Context) error {
 		exec.Command("bash", "-c", buildCmd).Output()
 	}
 
-	fmt.Printf("Starting all containers.\n")
+	fmt.Printf("Starting all containers\n")
 	startCmd := `docker-compose up -d`
-	start := exec.Command("bash", "-c", startCmd)
+	start := exec.Command("/bin/bash", "-c", startCmd)
 
-	fmt.Printf("%v\n", start)
 	start.Stdout = os.Stdout
 	start.Stderr = os.Stderr
 	start.Stdin = os.Stdin
@@ -256,17 +255,15 @@ func StartContainer(c *cli.Context) error {
 		return err
 	}
 
-	if err != nil {
-		fmt.Printf("%s", err)
-	}
-
-	copyCertsCmd := `docker exec php` + os.Getenv("PHPV") + ` sudo cp -r /etc/ssl/cert/. /etc/ssl/certs/`
+	copyCertsCmd := fmt.Sprintf("docker exec php%s sudo cp -r /etc/ssl/cert/. /etc/ssl/certs/", os.Getenv("PHPV"))
+	fmt.Println("Copying certificates to the PHP container")
 	_, err = exec.Command("bash", "-c", copyCertsCmd).Output()
 	if err != nil {
 		fmt.Printf("%s", err)
 	}
 
-	refreshCertsCmd := `docker exec php` + os.Getenv("PHPV") + ` sudo update-ca-certificates --fresh`
+	refreshCertsCmd := fmt.Sprintf("docker exec php%s sudo update-ca-certificates --fresh", os.Getenv("PHPV"))
+	fmt.Println("Updating the PHP container's certificates")
 	_, err = exec.Command("bash", "-c", refreshCertsCmd).Output()
 	if err != nil {
 		fmt.Printf("%s", err)
@@ -276,6 +273,7 @@ func StartContainer(c *cli.Context) error {
 		return ExecContainer(c)
 	}
 
+	cli.Exit("Started containers.", 0)
 	return err
 }
 

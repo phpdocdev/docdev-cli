@@ -12,6 +12,7 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/joho/godotenv"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 const (
@@ -187,8 +188,45 @@ func GetContainers() ([]docker.APIContainers, error) {
 	return client.ListContainers(opts)
 }
 
+func GetContainer(name string) docker.APIContainers {
+	containers, _ := GetContainers()
+	for _, container := range containers {
+		if name == container.Labels["com.docker.compose.service"] {
+			return container
+		}
+	}
+	
+	return docker.APIContainers{}
+}
+
+// func StartContainer(container docker.APIContainers) (*docker.Container, error) {
+	// client := GetDockerClient()
+
+	// ctx := context.TODO()
+
+	// compose.Up(ctx)
+	// if container.Status == "running" {
+	// 	client.RemoveContainer(docker.RemoveContainerOptions{
+	// 		ID: container.ID,
+	// 		Force: true,
+	// 	})
+
+	// }
+
+	// return client.CreateContainer(docker.CreateContainerOptions{
+	// 	Name: container.Labels["com.docker.compose.service"],
+	// })
+// }
+
 func ExecContainer(ID string, command string) {
 	client := GetDockerClient()
+
+	fd := int(os.Stdin.Fd())
+	if terminal.IsTerminal(fd) {
+		oldState, _ := terminal.MakeRaw(fd)
+		defer terminal.Restore(fd, oldState)
+	}
+
 	exec, _ := client.CreateExec(docker.CreateExecOptions{
 		Container: ID,
 		AttachStdin: true,
@@ -200,6 +238,7 @@ func ExecContainer(ID string, command string) {
 
 	client.StartExec(exec.ID, docker.StartExecOptions{
 		Detach: false,
+		Tty: true,
 		RawTerminal: true,
 		InputStream: os.Stdin,
 		OutputStream: os.Stdout,

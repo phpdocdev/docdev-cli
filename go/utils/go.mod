@@ -6,6 +6,7 @@ require (
 	github.com/fsouza/go-dockerclient v1.8.1
 	github.com/jedib0t/go-pretty/v6 v6.3.0
 	github.com/joho/godotenv v1.4.0
+	golang.org/x/crypto v0.0.0-20211202192323-5770296d904e
 )
 
 require (
@@ -14,6 +15,7 @@ require (
 	github.com/Microsoft/hcsshim v0.9.3 // indirect
 	github.com/containerd/cgroups v1.0.3 // indirect
 	github.com/containerd/containerd v1.6.6 // indirect
+	github.com/creack/pty v1.1.17 // indirect
 	github.com/docker/docker v20.10.17+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
@@ -30,6 +32,9 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
+	github.com/stretchr/testify v1.7.2 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
+	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467 // indirect
+	gotest.tools/v3 v3.3.0 // indirect
 )
