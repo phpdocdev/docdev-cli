@@ -170,7 +170,7 @@ fi
 log "info" "Setting up xhprof" "${DEBUG_LEVEL}"
 if [ -d "/home/dev/xhprof" ] 
 then
-	run "sudo rm -rf /var/www/html/xhprof && sudo mv /home/dev/xhprof /var/www/html/xhprof" "${DEBUG_LEVEL}"
+	run "sudo rm -rf /var/www/html/xhprof && sudo cp -r /home/dev/xhprof /var/www/html/xhprof" "${DEBUG_LEVEL}"
 fi
 
 ###
@@ -180,8 +180,8 @@ fi
 log "info" "Performing PHP-FPM configuration changes" "${DEBUG_LEVEL}"
 php-conf
 
-log "info" "Setting up monit" "${DEBUG_LEVEL}"
-monit
+# log "info" "Setting up monit" "${DEBUG_LEVEL}"
+# monit
 
 log "info" "Starting $(sudo php-fpm -v 2>&1 | head -1)" "${DEBUG_LEVEL}"
 exec "${@}"
