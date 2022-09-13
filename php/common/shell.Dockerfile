@@ -23,8 +23,8 @@ RUN echo "alias artisan='php artisan'" >> /home/${CUSTOM_USER_NAME}/.zshrc \
 RUN apt update && apt -y install gpg \
   && printf "%s\n" "deb http://ftp.de.debian.org/debian buster-backports main" | \
   sudo tee /etc/apt/sources.list.d/buster-backports.list \
-  && gpg --keyserver keyserver.ubuntu.com --recv-keys 648ACFD622F3D138 \
-  && gpg -a --export 648ACFD622F3D138 | sudo apt-key add - 
+  && gpg --keyserver keyserver.ubuntu.com --recv-keys 648ACFD622F3D138 || true \
+  && gpg -a --export 648ACFD622F3D138 | sudo apt-key add - || true
 
 RUN apt update && apt install -y zsh git monit \
   && ZSH="/home/${CUSTOM_USER_NAME}/.oh-my-zsh" sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" chsh -s $(which zsh) ${CUSTOM_USER_NAME} \

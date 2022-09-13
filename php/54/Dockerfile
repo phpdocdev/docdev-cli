@@ -67,6 +67,9 @@ RUN curl -o ioncube.tar.gz http://downloads3.ioncube.com/loader_downloads/ioncub
     && rm -Rf ioncube.tar.gz ioncube \
     && docker-php-ext-enable ioncube_loader_lin_$(php -r 'echo PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION;')
 
+ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+RUN chmod +x /usr/local/bin/install-php-extensions && sync
+
 ARG PHPV=54
 INCLUDE+ ./common/shell.Dockerfile
 

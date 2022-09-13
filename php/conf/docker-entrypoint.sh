@@ -70,7 +70,7 @@ function php-conf() {
 		echo "pm.start_servers = ${PHP_START_SERVERS}"
 		echo "pm.min_spare_servers = ${PHP_MIN_SPARE_SERVERS}"
 		echo "pm.max_spare_servers = ${PHP_MAX_SPARE_SERVERS}"
-	} | sudo tee /usr/local/etc/php-fpm.d/zz-docker.conf
+	} | sudo tee /usr/local/etc/php-fpm.d/zz-docker.conf || true
 
 	{
 		echo "max_execution_time=${PHP_MAX_EXECUTION_TIME}"
