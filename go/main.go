@@ -119,7 +119,7 @@ GLOBAL OPTIONS:
 			},
 			{
 				Name:     "exec",
-				Aliases:  []string{"e"},
+				Aliases:  []string{"e", "ssh"},
 				Usage:    "Start docker container shell. Default: php-fpm",
 				Category: categories["Containers"],
 				Action:   base.ExecContainer,
