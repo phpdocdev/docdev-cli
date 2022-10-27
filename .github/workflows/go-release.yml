@@ -5,6 +5,7 @@ on:
     paths:
       - .github/workflows/go-release.yml
       - .goreleaser.yaml
+      - ./go
     tags:
       - '*'
 

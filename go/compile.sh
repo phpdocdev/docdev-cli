@@ -4,6 +4,7 @@ package_name="docdev"
 
 #the full list of the platforms: https://golang.org/doc/install/source#environment
 platforms=(
+"darwin/arm64"
 "darwin/amd64"
 "linux/amd64"
 "windows/amd64"
@@ -25,7 +26,9 @@ do
 
     (
         env GOOS=$GOOS GOARCH=$GOARCH GODEBUG=netdns=cgo+2 CGO_ENABLED=0 go build -ldflags "-s -w -X 'main.Version=v$version'" -o $output_name main.go;
-        upx --best --lzma $output_name
+        if [ $GOARCH != "arm64" ]; then
+            upx --best --lzma $output_name
+        fi
     )
     if [ $? -ne 0 ]; then
         echo 'An error has occurred! Aborting the script execution...'
