@@ -1,5 +1,5 @@
 # syntax = edrevo/dockerfile-plus
-FROM php:8.1-fpm
+FROM php:8.2-fpm
 
 ENV PATH /usr/local/go/bin:/root/.composer/vendor/bin:$PATH
 
@@ -30,11 +30,17 @@ RUN apt update && apt install -y --no-install-recommends \
     zsh \
     fonts-powerline \
     powerline \
-  && yes '' | pecl install -f memcached redis xdebug mcrypt \
+  && yes '' | pecl install -f redis xdebug mcrypt \
   && docker-php-ext-install -j$(nproc) bcmath calendar exif intl mysqli opcache pdo_mysql soap xsl zip\
-  && docker-php-ext-enable mcrypt memcached redis xdebug\
+  && docker-php-ext-enable mcrypt redis xdebug\
   && apt clean \
   && rm -rf /var/lib/apt/lists/*
+
+ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+RUN chmod +x /usr/local/bin/install-php-extensions && sync; \
+  install-php-extensions ldap; 
+
+RUN apt update && apt install -y zlib1g-dev libssl-dev memcached && install-php-extensions php-memcached-dev/php-memcached@master
 
 # Configure GD Library
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
@@ -63,12 +69,10 @@ COPY ./conf/custom.ini /usr/local/etc/php/conf.d/zza-custom.ini
 COPY ./conf/supervisord.conf /etc/supervisor/supervisord.conf
 RUN touch /etc/supervisor/supervisord.pid
 
-ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
-RUN chmod +x /usr/local/bin/install-php-extensions && sync && \
-    install-php-extensions ldap ioncube_loader
+ARG PHPV=82
 
-ARG PHPV=81
 INCLUDE+ ./common/shell.Dockerfile
+INCLUDE+ ./common/xhprof.Dockerfile
+COPY ./conf/global.php /home/dev/global.php
 
-ENTRYPOINT []
-CMD ["/usr/bin/supervisord"]
+CMD ["sudo", "php-fpm", "-g", "/var/run/php-fpm.pid"]

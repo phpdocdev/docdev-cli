@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        TAGS: [54, "54-alpine", 56, "56-alpine", 72, 74, 81]
+        TAGS: [54, "54-alpine", 56, "56-alpine", 72, 74, 82]
     steps:
       - name: checkout
         uses: actions/checkout@v3

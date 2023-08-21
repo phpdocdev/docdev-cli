@@ -5,7 +5,7 @@ compile: generate install release
 install:
 	rm -rf ./build/*
 	cd go; ./compile.sh
-#	cp ./build/docdev-darwin-amd64 /usr/local/bin/docdev
+	cp ./build/docdev-darwin-arm64 /usr/local/bin/docdev
 generate:
 	@echo "$(NEXT_VERSION)" > VERSION
 release:
@@ -24,5 +24,5 @@ php72:
 	docker buildx build -f php/72/Dockerfile php/. --platform linux/arm64,linux/amd64 --push --tag brandonkiefer/php-dev:7.2
 php74:
 	docker buildx build -f php/74/Dockerfile php/. --platform linux/arm64,linux/amd64 --push --tag brandonkiefer/php-dev:7.4
-php81:
-	docker buildx build -f php/81/Dockerfile php/. --platform linux/arm64,linux/amd64 --push --tag brandonkiefer/php-dev:8.1
+php82:
+	docker buildx build -f php/82/Dockerfile php/. --platform linux/arm64,linux/amd64 --push --tag brandonkiefer/php-dev:8.2
